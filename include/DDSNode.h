@@ -10,7 +10,7 @@
 #include <fastdds/dds/publisher/Publisher.hpp>
 #include <fastdds/dds/subscriber/Subscriber.hpp>
 #include <fastdds/dds/domain/DomainParticipant.hpp>
-#include "dds_c_qos.h"
+#include "ddsqos.h"
 
 using namespace std;
 using namespace eprosima::fastdds::dds;

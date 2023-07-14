@@ -1,4 +1,4 @@
-#include "dds_c_interface.h"
+#include "ddsc.h"
 #include "DDSNode.h"
 #include <map>
 #include "TestingDataPubSubTypes.h"

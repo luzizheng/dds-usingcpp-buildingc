@@ -2,7 +2,7 @@
 #define __DDSNODECONST__
 
 #include <stdint.h>
-#include "dds_c_define.h"
+#include "ddsdefine.h"
 
 #define TOPIC_NAME_REQUEST "test_topic_request"
 #define TOPIC_NAME_RESPONSE "test_topic_response"

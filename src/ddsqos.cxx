@@ -1,4 +1,4 @@
-#include "dds_c_qos.h"
+#include "ddsqos.h"
 #include <stdlib.h>
 #include <string.h>
 
