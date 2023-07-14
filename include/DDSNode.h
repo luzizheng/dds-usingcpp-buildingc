@@ -36,7 +36,6 @@ public:
     DomainParticipant *m_participant;
     Publisher *m_publisher;
     Subscriber *m_subscriber;
-    
 
     DDSNode(/* args */);
     ~DDSNode();
@@ -59,7 +58,7 @@ public:
     DDS_CODE setRecvDataCallback(string __topicN, dds_recvcallback callback_);
     /// @brief 读取数据，需要阻塞
     /// @return 读取到返回0，不读取到返回其他
-    DDS_CODE readData(string __topicN,TestingData *_data);
+    DDS_CODE readData(string __topicN, uint32_t _timeout_s, TestingData *_data);
 
     void run();
     bool getStatus();

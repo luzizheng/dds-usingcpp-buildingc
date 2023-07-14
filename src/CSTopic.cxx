@@ -5,7 +5,6 @@
 #include <thread>
 #include "dds_utils.h"
 
-
 using namespace std;
 
 CSTopic::CSTopic()
@@ -20,23 +19,23 @@ CSTopic::~CSTopic()
     if (m_datawriter != nullptr)
     {
         rcode = m_node->m_publisher->delete_datawriter(m_datawriter);
-        // REPORTDDSCODE(rcode, "datawriter释放");
+        reportDDSCode(rcode, "datawriter deleted");
     }
     if (m_datareader != nullptr)
     {
         rcode = m_node->m_subscriber->delete_datareader(m_datareader);
-        // REPORTDDSCODE(rcode, "datareader释放");
+        reportDDSCode(rcode, "datareader deleted");
     }
     if (m_topic_pub != nullptr)
     {
         rcode = m_node->m_participant->delete_topic(m_topic_pub);
-        // REPORTDDSCODE(rcode, "topic_pub释放");
+        reportDDSCode(rcode, "topic_pub deleted");
     }
 
-    if (m_topic_sub != nullptr)
+    if (m_topic_sub != m_topic_pub && m_topic_sub != nullptr)
     {
         rcode = m_node->m_participant->delete_topic(m_topic_sub);
-        // REPORTDDSCODE(rcode, "topic_sub释放");
+        reportDDSCode(rcode, "topic_sub deleted");
     }
 
     cout << "CSTopic:" + m_topicName + " 释放" << endl;
@@ -173,11 +172,8 @@ void CSTopic::sendDataThread__(TestingData *data__, int16_t waitTilConnect__)
     data__->timestamp(get_milliseconds_timestamp());
     InstanceHandle_t handle;
     ReturnCode_t return_code = m_datawriter->write(data__, handle);
-    if (return_code != ReturnCode_t::ReturnCodeValue::RETCODE_OK)
-    {
-        std::cerr << "return code " << return_code() << std::endl;
-    }
-    std::cout << "往(" << m_topicName << ")发送数据成功" << std::endl;
+    std::string sucmsg = "往(" + m_topicName + ")发送数据成功";
+    reportDDSCode(return_code, sucmsg);
 }
 
 DDS_CODE CSTopic::sendData(TestingData *__data, bool __anotherThread, bool _waitTilConnect)
@@ -205,12 +201,8 @@ DDS_CODE CSTopic::sendData(TestingData *__data, bool __anotherThread, bool _wait
 
         InstanceHandle_t handle;
         ReturnCode_t return_code = m_datawriter->write(__data, handle);
-        if (return_code != ReturnCode_t::ReturnCodeValue::RETCODE_OK)
-        {
-            std::cerr << "return code " << return_code() << std::endl;
-            return 1;
-        }
-        std::cout << "往(" << m_topicName << ")发送数据成功" << std::endl;
+        std::string sucmsg = "往(" + m_topicName + ")发送数据成功";
+        reportDDSCode(return_code, sucmsg);
         return 0;
     }
 }
@@ -240,6 +232,11 @@ void CSTopic::DRListener::on_subscription_matched(DataReader *reader, const Subs
 void CSTopic::DRListener::on_data_available(
     DataReader *reader)
 {
+    
+    if (listener_enable == false)
+    {
+        return;
+    }
     TestingData data;
     SampleInfo info;
 
@@ -248,13 +245,13 @@ void CSTopic::DRListener::on_data_available(
         if (info.valid_data)
         {
             p_topic->m_node->m_data_received(p_topic, &data);
-            
+
             // callback
             if (p_topic->m_callback != nullptr)
-            {   
+            {
                 void *pdata = (void *)data.payload().data();
                 uint32_t data_len = (uint32_t)(data.payload().size() * sizeof(char));
-                p_topic->m_callback(pdata,data_len);
+                p_topic->m_callback(pdata, data_len);
             }
         }
     }

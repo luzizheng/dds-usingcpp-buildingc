@@ -238,7 +238,6 @@ DDS_CODE DDSNode::sendDataToAllTopic(TestingData *_data, bool _waitTilConnect)
     }
     return 0;
 }
-
 void DDSNode::m_pub_matchedDidChanged(CSTopic *__topic, int32_t _currentMatched)
 {
 }
@@ -307,11 +306,12 @@ DDS_CODE DDSNode::setRecvDataCallback(string __topicN, dds_recvcallback callback
         cout << "找不到topic" << endl;
         return -1;
     }
+    target->m_dr_listener.listener_enable = true;
     target->setRecvDataCallback(callback_);
     return 0;
 }
 
-DDS_CODE DDSNode::readData(string __topicN,TestingData *_data)
+DDS_CODE DDSNode::readData(string __topicN, uint32_t _timeout_s, TestingData *_data)
 {
     CSTopic *target = nullptr;
     for (int i = 0; i < m_topic_li.size(); i++)
@@ -331,67 +331,37 @@ DDS_CODE DDSNode::readData(string __topicN,TestingData *_data)
         cout << "找不到topic" << endl;
         return -1;
     }
+    target->m_dr_listener.listener_enable = false;
+
     SampleInfo info;
-    ReturnCode_t rc = target->m_datareader->read_next_sample(_data,&info);
-    // if (rc == ReturnCode_t::ReturnCodeValue::RETCODE_OK)
-    if (rc == ReturnCode_t::ReturnCodeValue::RETCODE_OK)
-    {
-        cout << "RETCODE_OK" << endl;
-    }else if(rc == ReturnCode_t::ReturnCodeValue::RETCODE_ERROR)
-    {
-        cout << "RETCODE_ERROR" << endl;
-    }else if(rc == ReturnCode_t::ReturnCodeValue::RETCODE_UNSUPPORTED)
-    {
-        cout << "RETCODE_UNSUPPORTED" << endl;
-    }else if(rc == ReturnCode_t::ReturnCodeValue::RETCODE_BAD_PARAMETER)
-    {
-        cout << "RETCODE_BAD_PARAMETER" << endl;
-    }else if(rc == ReturnCode_t::ReturnCodeValue::RETCODE_PRECONDITION_NOT_MET)
-    {
-        cout << "RETCODE_PRECONDITION_NOT_MET" << endl;
-    }else if(rc == ReturnCode_t::ReturnCodeValue::RETCODE_OUT_OF_RESOURCES)
-    {
-        cout << "RETCODE_OUT_OF_RESOURCES" << endl;
-    }else if(rc == ReturnCode_t::ReturnCodeValue::RETCODE_NOT_ENABLED)
-    {
-        cout << "RETCODE_NOT_ENABLED" << endl;
-    }else if(rc == ReturnCode_t::ReturnCodeValue::RETCODE_IMMUTABLE_POLICY)
-    {
-        cout << "RETCODE_IMMUTABLE_POLICY" << endl;
-    }else if(rc == ReturnCode_t::ReturnCodeValue::RETCODE_INCONSISTENT_POLICY)
-    {
-        cout << "RETCODE_INCONSISTENT_POLICY" << endl;
-    }else if(rc == ReturnCode_t::ReturnCodeValue::RETCODE_ALREADY_DELETED)
-    {
-        cout << "RETCODE_ALREADY_DELETED" << endl;
-    }else if(rc == ReturnCode_t::ReturnCodeValue::RETCODE_TIMEOUT)
-    {
-        cout << "RETCODE_TIMEOUT" << endl;
-    }else if(rc == ReturnCode_t::ReturnCodeValue::RETCODE_NO_DATA)
-    {
-        cout << "RETCODE_NO_DATA" << endl;
-    }else if(rc == ReturnCode_t::ReturnCodeValue::RETCODE_ILLEGAL_OPERATION)
-    {
-        cout << "RETCODE_ILLEGAL_OPERATION" << endl;
-    }else if(rc == ReturnCode_t::ReturnCodeValue::RETCODE_NOT_ALLOWED_BY_SECURITY)
-    {
-        cout << "RETCODE_NOT_ALLOWED_BY_SECURITY" << endl;
-    }
+    eprosima::fastrtps::Duration_t timeout(_timeout_s, 0); // 超时设置
 
-
-    if (rc == ReturnCode_t::ReturnCodeValue::RETCODE_OK)
+    // 当前线程置于轮询，读取数据
+    std::cout << "reading..." << std::endl;
+    if (target->m_datareader->wait_for_unread_message(timeout))
     {
-        if (info.valid_data)
+        if (ReturnCode_t::RETCODE_OK == target->m_datareader->take_next_sample(_data, &info))
         {
-            return 0;
-        }else{
-            cout << "数据不可用" << endl;
-            return -3;
+            if (info.valid_data)
+            {
+                std::cout << "读取数据成功" << std::endl;
+                return DDS_MSG_SUCCESS;
+            }
+            else
+            {
+                std::cout << "data reader已销毁,结束轮询" << std::endl;
+            }
         }
-    }else{
-        cout << "读取失败" << endl;
-        return -2;
     }
+    else
+    {
+        std::cout << "轮询超时，没有数据" << std::endl;
+    }
+
+    return DDS_MSG_OTHERERR;
+
+    // ReturnCode_t rc = target->m_datareader->take_next_sample(_data,&info);
+    // reportDDSCode(rc,"读取成功");
 }
 
 bool DDSNode::getStatus()

@@ -76,7 +76,7 @@ public:
     class DRListener : public DataReaderListener
     {
     public:
-        DRListener() : m_matched(0)
+        DRListener() : listener_enable(false), m_matched(0)
         {
         }
 
@@ -84,10 +84,12 @@ public:
         {
         }
 
+        /// @brief 是否启用，默认false，当外部需要主动read数据时，这个不能启用，否则就被listener取掉数据了
+        bool listener_enable;
+
         CSTopic *p_topic;
         int32_t m_matched;
         void on_data_available(DataReader *reader) override;
-
         void on_subscription_matched(DataReader *reader, const SubscriptionMatchedStatus &info) override;
     } m_dr_listener;
 };

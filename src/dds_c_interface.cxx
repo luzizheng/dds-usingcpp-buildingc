@@ -152,7 +152,7 @@ DDS_MSGCODE dds_send(const dds_fd fd_, const char *topicN, void *data, uint32_t 
     return node->sendData(topic_name, ddsData, waituntilconnect);
 }
 
-DDS_MSGCODE dds_read(const dds_fd fd_, const char *topicN, void *data, uint32_t *data_len)
+DDS_MSGCODE dds_read(const dds_fd fd_, const char *topicN, uint32_t timeout_s, void **data_pp, uint32_t *data_len)
 {
     DDSNode *node = node_list[fd_];
     if (node == nullptr)
@@ -167,13 +167,20 @@ DDS_MSGCODE dds_read(const dds_fd fd_, const char *topicN, void *data, uint32_t 
     }
     TestingData tdata;
     std::string topic_name = topicN;
-    DDS_MSGCODE code = node->readData(topic_name,&tdata);
-    if (code == 0)
+    DDS_MSGCODE code = node->readData(topic_name, timeout_s, &tdata);
+
+    if (code == DDS_MSG_SUCCESS)
     {
-        data = (void *)tdata.payload().data();
-        *data_len = tdata.payload().size() * sizeof(char);
+        // std::cout << "reading sueccessed : " << code << std::endl;
+        *data_len = (uint32_t)(tdata.payload().size() *sizeof(char));
+        char * message = (char *)malloc((*data_len)+1);
+        memcpy(message,tdata.payload().data(),*data_len);
+        message[*data_len] = '\0';
+        *data_pp = message;
         return DDS_MSG_SUCCESS;
-    }else{
+    }
+    else
+    {
         return code;
     }
 }
@@ -196,5 +203,5 @@ DDS_MSGCODE dds_revcDataCallback(const dds_fd fd_, const char *topicN, dds_recvc
         return DDS_MSG_TOPICNAMEERR;
     }
     std::string topic_name = topicN;
-    return node->setRecvDataCallback(topic_name,callback);
+    return node->setRecvDataCallback(topic_name, callback);
 }

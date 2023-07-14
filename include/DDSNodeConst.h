@@ -21,12 +21,6 @@ typedef enum DDS_NODE_KIND
 typedef int16_t DDS_CODE;
 
 
-#define REPORTDDSCODE(_rcode_,message)\
-if (rcode == ReturnCode_t::RETCODE_OK)\
-{\
-    std::cout<< message << std::endl;\
-}
-
 
 
 
