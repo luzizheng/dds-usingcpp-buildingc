@@ -43,23 +43,23 @@ extern "C"
 
     typedef enum _DDS_SIDE_ DDS_SIDE;
 
-    /*用于DDS协议接口交互*/
-    typedef struct
-    {
-        uint16_t serviceID;              // 服务ID
-        char serviceName[DDSSERNAMELEN]; // 服务名称
-        char topicN[DDSTOPICNAMELEN];    // TOPIC名称
-    } DDSProtocolS;
+    // /*用于DDS协议接口交互*/
+    // typedef struct
+    // {
+    //     uint16_t serviceID;              // 服务ID
+    //     char serviceName[DDSSERNAMELEN]; // 服务名称
+    //     char topicN[DDSTOPICNAMELEN];    // TOPIC名称
+    // } DDSProtocolS;
 
-    /*用于储存服务列表*/
-    typedef struct
-    {
-        char serId[DDSSERIDLEN];
-        char sername[DDSTOPICNAMELEN];
-        char domain[5];
-        DDS_MSGCODE topic;
+    // /*用于储存服务列表*/
+    // typedef struct
+    // {
+    //     char serId[DDSSERIDLEN];
+    //     char sername[DDSTOPICNAMELEN];
+    //     char domain[5];
+    //     DDS_MSGCODE topic;
 
-    } DDSServiceS;
+    // } DDSServiceS;
 
 #ifdef __cplusplus
 }

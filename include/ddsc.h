@@ -45,7 +45,7 @@ extern "C"
     /// @param fd_ dds描述符
     /// @param topicN
     /// @param timeout_s 轮询超时时间
-    /// @param data 接收数据的头地址
+    /// @param data_pp 接收数据的头地址
     /// @param data_len 接收数据的长度指针
     /// @return
     DDS_MSGCODE dds_read(const dds_fd fd_, const char *topicN, uint32_t timeout_s, void **data_pp, uint32_t *data_len);

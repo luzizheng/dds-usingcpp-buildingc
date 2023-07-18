@@ -5,6 +5,8 @@
 /// @brief 根据xml文件生成一个qos结构体
 bool genqosconf(c_qos *qos_ptr, const char *xmlfile)
 {
+
+    return true;
 }
 
 /// @brief 释放结构体
@@ -45,6 +47,7 @@ bool freeQos(c_qos *qos_ptr)
         free(qos_ptr);
         qos_ptr = NULL;
     }
+    return true;
 }
 
 /// @brief 创建默认qos结构体
