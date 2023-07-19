@@ -9,7 +9,6 @@ extern "C"
 {
 #endif
 
-
 #define QOS_IP_LEN 20
 #define QOS_DOMAIN_LEN 20
 #define QOS_DIR_LEN 30
@@ -72,7 +71,7 @@ extern "C"
     typedef struct qos_reliable_
     {
         enum qos_reliable_mode mode;
-    }qos_reliableS;
+    } qos_reliableS;
 
     /// @brief qos结构体，后续可以添加更多字段，以支持更多qos策略
     typedef struct c_qos_
@@ -86,14 +85,13 @@ extern "C"
     /// @brief 根据xml文件生成一个qos结构体
     /// @param qos_ptr qos结构体指针
     /// @param xmlfile xml文件路径
-    bool genqosconf(c_qos *qos_ptr,const char *xmlfile);
+    bool genqosconf(c_qos *qos_ptr, const char *xmlfile);
 
     /// @brief 释放结构体
     bool freeQos(c_qos *qos_ptr);
 
     /// @brief 创建默认qos结构体
     c_qos *dds_qos_createDefaultQoS();
-
 
 #ifdef __cplusplus
 }

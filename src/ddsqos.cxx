@@ -5,7 +5,7 @@
 /// @brief 根据xml文件生成一个qos结构体
 bool genqosconf(c_qos *qos_ptr, const char *xmlfile)
 {
-
+    
     return true;
 }
 
@@ -53,6 +53,7 @@ bool freeQos(c_qos *qos_ptr)
 /// @brief 创建默认qos结构体
 c_qos *dds_qos_createDefaultQoS()
 {
+    // malloc结构体
     c_qos *qos =  (c_qos*)malloc(sizeof(c_qos));
     qos->transfer = (qos_transferS *)malloc(sizeof(qos_transferS));
     qos->transfer->tcp_ip_Conf = (ipconfig *)malloc(sizeof(ipconfig));
@@ -60,6 +61,8 @@ c_qos *dds_qos_createDefaultQoS()
     qos->qos_data_sharing = (qos_data_sharingS *)malloc(sizeof(qos_data_sharingS));
     qos->qos_reliable = (qos_reliableS *)malloc(sizeof(qos_reliableS));
 
+
+    // 默认值设置
     qos->transfer->mode = qos_trans_protocol::UDPv4;
     qos->transfer->sendBufferSize = 1024*1024*10;
     qos->transfer->receiveBufferSize = 1024*1024*10;

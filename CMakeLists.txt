@@ -1,8 +1,8 @@
 
 cmake_minimum_required(VERSION 3.15)
 
-# 目标文件类型 APP LIB 
-set(BTYPE APP)
+# 目标文件类型 APP LIB TEST
+set(BTYPE QOSTEST)
 
 # 编译架构：x86 arm64
 set(ARCHITECTURE x86)
@@ -31,6 +31,8 @@ if(${BTYPE} STREQUAL "APP")
 project(ddsexample VERSION 1 LANGUAGES C CXX)
 elseif(${BTYPE} STREQUAL "LIB")
 project(ddsc VERSION 1 LANGUAGES C CXX)
+elseif(${BTYPE} STREQUAL "QOSTEST")
+project(ddstest VERSION 1 LANGUAGES C CXX)
 endif()
 
 
@@ -39,9 +41,17 @@ include_directories(${PROJECT_SOURCE_DIR}/third_include)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 
+
 file(GLOB_RECURSE SRC_C "${PROJECT_SOURCE_DIR}/src/*.c")
 file(GLOB_RECURSE SRC_CPP "${PROJECT_SOURCE_DIR}/src/*.cpp")
 file(GLOB_RECURSE SRC_CXX "${PROJECT_SOURCE_DIR}/src/*.cxx")
+
+if(${BTYPE} STREQUAL "QOSTEST")
+include_directories(${PROJECT_SOURCE_DIR}/dds_test)
+file(GLOB_RECURSE TEST_CXX "${PROJECT_SOURCE_DIR}/dds_test/*.cxx")
+file(GLOB_RECURSE TEST_CPP "${PROJECT_SOURCE_DIR}/dds_test/*.cpp")
+endif()
+
 
 
 #lib 文件
@@ -60,6 +70,8 @@ if(${BTYPE} STREQUAL "APP")
 add_executable(${PROJECT_NAME} ${SRC_C} ${SRC_CXX} ${SRC_CPP})
 elseif(${BTYPE} STREQUAL "LIB")
 add_library(${PROJECT_NAME} SHARED ${SRC_C} ${SRC_CXX} ${SRC_CPP})
+elseif(${BTYPE} STREQUAL "QOSTEST")
+add_executable(${PROJECT_NAME} ${SRC_CXX} ${SRC_CPP} ${TEST_CXX} ${TEST_CPP})
 endif()
 
 

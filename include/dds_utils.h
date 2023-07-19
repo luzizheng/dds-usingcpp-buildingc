@@ -9,7 +9,6 @@
 /// @return 
 double get_milliseconds_timestamp();
 
-std::string get_current_timef();
 
 void printDDSRetCode(eprosima::fastrtps::types::ReturnCode_t &__rc);
 

@@ -77,6 +77,8 @@ DDS_MSGCODE dds_close(const dds_fd fd_)
 /// @return 成功返回0
 DDS_MSGCODE dds_setQos(const dds_fd fd_, c_qos *qos_)
 {
+    
+    return DDS_MSG_OTHERERR;
 }
 
 /// @brief 绑定topic
