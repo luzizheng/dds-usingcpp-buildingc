@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 3.15)
 
-# 目标文件类型 APP LIB TEST
+# 目标文件类型 APP LIB QOSTEST
 set(BTYPE QOSTEST)
 
 # 编译架构：x86 arm64

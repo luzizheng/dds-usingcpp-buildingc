@@ -1,17 +1,3 @@
-# Copyright 2016 Proyectos y Sistemas de Mantenimiento SL (eProsima).
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import argparse
 import os
 import subprocess
@@ -23,20 +9,20 @@ if __name__ == '__main__':
     parser.add_argument(
         '-x',
         '--xml_file',
-        help='A Fast-RTPS XML configuration file',
+        help='Fast-RTPS XML 配置文件',
         required=False
     )
     parser.add_argument(
         '-f',
         '--demands_file',
-        help='Filename of the demands configuration file',
+        help='需求配置文件的文件名',
         required=False,
         default=None
     )
     parser.add_argument(
         '-n',
         '--number_of_samples',
-        help='The number of measurements to take for each payload',
+        help='要对每个有效负载进行的测量次数',
         required=False,
         default='10000'
     )
@@ -44,71 +30,71 @@ if __name__ == '__main__':
         '-s',
         '--security',
         action='store_true',
-        help='Enables security (Defaults: disable)',
+        help='启用安全性组件 (默认: 不启用)',
         required=False
     )
     parser.add_argument(
         '-i',
         '--interprocess',
         action='store_true',
-        help='Publisher and subscribers in separate processes. Defaults:False',
+        help='Publisher和Subsriber位于不同的进程中. 默认:False',
         required=False
     )
     parser.add_argument(
         '-d',
         '--data_sharing',
         choices=['on', 'off'],
-        help='Explicitly enable/disable data sharing. (Defaults: Fast-DDS default settings)',
+        help='显式 启用/禁用 data sharing. (默认: Fast-DDS 的默认配置)',
         required=False
     )
     parser.add_argument(
         '-l',
         '--data_loans',
         action='store_true',
-        help='Enable the use of the loan sample API (Defaults: disable)',
+        help='启用可以使用loan的简单API (默认: disable)',
         required=False
     )
     parser.add_argument(
         '-r',
         '--reliability',
         action='store_true',
-        help='Run with RELIABLE reliability (Defaults: disable)',
+        help='以RELIABLE的可靠性运行 (Defaults: disable)',
         required=False
     )
     parser.add_argument(
         '--shared_memory',
         choices=['on', 'off'],
-        help='Explicitly enable/disable shared memory transport. (Defaults: Fast-DDS default settings)',
+        help='显式 启用/禁用 共享内存传输. (默认: Fast-DDS 的默认配置)',
         required=False
         )
 
-    # Parse arguments
+    # 解析参数
     args = parser.parse_args()
     xml_file = args.xml_file
     security = args.security
     interprocess = args.interprocess
 
     if security and not interprocess:
-        print('Intra-process delivery NOT supported with security')
-        exit(1)  # Exit with error
+        print('进程内通信不支持启用安全性')
+        exit(1)  # 错误退出
 
-    # Check that samples is positive
+    # 检查样本数是否为正数
     if str.isdigit(args.number_of_samples) and int(args.number_of_samples) > 0:
         samples = str(args.number_of_samples)
     else:
         print(
-            '"number_of_samples" must be a positive integer, NOT {}'.format(
+            '"number_of_samples" 必须是正数, NOT {}'.format(
                 args.number_of_samples
             )
         )
-        exit(1)  # Exit with error
+        exit(1)  # 错误退出
 
     # Demands files options
     demands_options = []
     if args.demands_file:
         if not os.path.isfile(args.demands_file):
-            print('Demands file "{}" is NOT a file'.format(args.demands_file))
-            exit(1)  # Exit with error
+            print('需求文件 "{}" 不是一个文件'.format(args.demands_file))
+            exit(1)  # 错误退出
         else:
             demands_options = [
                 '--file',
@@ -120,8 +106,8 @@ if __name__ == '__main__':
     xml_options = []
     if xml_file:
         if not os.path.isfile(xml_file):
-            print('XML file "{}" is NOT a file'.format(xml_file))
-            exit(1)  # Exit with error
+            print('XML文件 "{}" 不是一个文件'.format(xml_file))
+            exit(1)  # 错误退出
         else:
             xml_options = ['--xml', xml_file]
             # Get QoS from XML
@@ -169,11 +155,11 @@ if __name__ == '__main__':
     # Check that executable exists
     if executable:
         if not os.path.isfile(executable):
-            print('LATENCY_TEST_BIN does NOT specify a file')
-            exit(1)  # Exit with error
+            print('LATENCY_TEST_BIN 没有指定一个文件')
+            exit(1)  # 错误退出
     else:
-        print('LATENCY_TEST_BIN is NOT set')
-        exit(1)  # Exit with error
+        print('LATENCY_TEST_BIN 未设置')
+        exit(1)  # 错误退出
 
     # Security
     security_options = []
@@ -182,11 +168,11 @@ if __name__ == '__main__':
             if os.path.isdir(certs_path):
                 security_options = ['--security=true', '--certs=' + certs_path]
             else:
-                print('CERTS_PATH does NOT specify a directory')
-                exit(1)  # Exit with error
+                print('CERTS_PATH 没有指定一个目录')
+                exit(1)  # 错误退出
         else:
-            print('Cannot find CERTS_PATH environment variable')
-            exit(1)  # Exit with error
+            print('找不到 CERTS_PATH 的环境变量')
+            exit(1)  # 错误退出
 
     # Domain
     domain = str(os.getpid() % 230)

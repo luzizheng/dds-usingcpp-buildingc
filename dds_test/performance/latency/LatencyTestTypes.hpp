@@ -1,17 +1,3 @@
-// Copyright 2016 Proyectos y Sistemas de Mantenimiento SL (eProsima).
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 /**
  * @file LatencyTestTypes.h
  *
@@ -47,31 +33,30 @@ private:
 
 };
 
-/*
- * Loanable DataTypes should be flat (only used basic types and arrays).
- * Consequently the compiler cannot generate this type allocation code because the array member size is unknown at build
- * time. The LatencyDataType must allocate a suitable buffer for these objects based on the array member size given at
- * runtime. A beforehand knowledge of this type alignment in needed to calculate the right buffer size. The default
- * alignment turn out to be 4 in both msvc and gcc for x86 and x64 architectures. The alignas specifier is used to match
- * this default behaviour in other platforms.
- * This type does not define a comparison operator because the actual data size referenced is unknown. Use the
- * comparison method provided in LatencyDataType.
- * */
+
+// 可借用数据类型应该是平面的（仅使用基本类型和数组）。
+// 因此，编译器无法生成此类型分配代码，因为在生成时数组成员大小未知。
+// LatencyDataType 必须根据运行时给定的数组成员大小为这些对象分配合适的缓冲区。
+// 需要事先了解这种类型的对齐方式，以计算正确的缓冲区大小。
+// 对于 x86 和 x64 架构，在 msvc 和 gcc 中，默认对齐方式均为 4。
+// alignas 说明符用于匹配其他平台中的此默认行为。
+// 此类型不定义比较运算符，因为引用的实际数据大小未知。
+// 使用延迟数据类型中提供的比较方法。
 struct alignas (4) LatencyType
 {
-    // identifies the sample sent
+    // 标识发送的样本
     uint32_t seqnum = 0;
-    // extra time devoted on bouncing in nanoseconds
+    // 以纳秒为单位用于弹跳的额外时间
     uint32_t bounce = 0;
-    // actual payload
+    // 实际有效载荷
     uint8_t data[1];
-    // this struct overhead
+    // 此结构开销
     static const size_t overhead;
 };
 
 class LatencyDataType : public eprosima::fastdds::dds::TopicDataType
 {
-    // Buffer size for size management
+    // 用于大小管理的缓冲区大小
     size_t buffer_size_;
 
 public:
@@ -130,13 +115,13 @@ public:
 
     bool is_bounded() const override
     {
-        // All plain types are bounded
+        // 所有普通类型都有界
         return is_plain();
     }
 
     bool is_plain() const override
     {
-        // It is plain because the type has a fixed size
+        // 它是普通的，因为类型具有固定的大小
         return true;
     }
 

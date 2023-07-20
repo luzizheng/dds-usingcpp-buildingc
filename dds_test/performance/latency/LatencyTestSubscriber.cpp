@@ -1,17 +1,3 @@
-// Copyright 2016 Proyectos y Sistemas de Mantenimiento SL (eProsima).
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 /**
  * @file LatencyTestSubscriber.cpp
  *
@@ -46,7 +32,7 @@ LatencyTestSubscriber::LatencyTestSubscriber()
 
 LatencyTestSubscriber::~LatencyTestSubscriber()
 {
-    // Static type endpoints should have been remove for each payload iteration
+    // 应为每个有效负载迭代删除静态类型终结点
     if (dynamic_types_)
     {
         destroy_data_endpoints();
@@ -57,7 +43,7 @@ LatencyTestSubscriber::~LatencyTestSubscriber()
             || nullptr != latency_data_sub_topic_
             || !latency_data_type_)
     {
-        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "ERROR unregistering the DATA type and/or removing the endpoints");
+        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "注销数据类型和/或删除端点时出错");
     }
 
     subscriber_->delete_datareader(command_reader_);
@@ -74,7 +60,7 @@ LatencyTestSubscriber::~LatencyTestSubscriber()
 
     DomainParticipantFactory::get_instance()->delete_participant(participant_);
 
-    EPROSIMA_LOG_INFO(LatencyTest, "Sub: Participant removed");
+    EPROSIMA_LOG_INFO(LatencyTest, "Sub: Participant 已移除");
 }
 
 bool LatencyTestSubscriber::init(
@@ -93,7 +79,7 @@ bool LatencyTestSubscriber::init(
         int forced_domain,
         LatencyDataSizes& latency_data_sizes)
 {
-    // Initialize state
+    // 初始化state
     xml_config_file_ = xml_config_file;
     echo_ = echo;
     samples_ = samples;
@@ -107,17 +93,17 @@ bool LatencyTestSubscriber::init(
 
     data_size_sub_ = latency_data_sizes.sample_sizes();
 
-    /* Create DomainParticipant*/
+    /* 创建 DomainParticipant*/
     std::string participant_profile_name = "sub_participant_profile";
     DomainParticipantQos pqos;
 
-    // Default domain
+    // 默认 domain
     DomainId_t domainId = pid % 230;
 
-    // Default participant name
+    // 默认 participant 名称
     pqos.name("latency_test_subscriber");
 
-    // Load XML configuration
+    // 加载 XML 配置
     if (xml_config_file_.length() > 0)
     {
         if ( ReturnCode_t::RETCODE_OK !=
@@ -130,20 +116,19 @@ bool LatencyTestSubscriber::init(
         }
     }
 
-    // Apply user's force domain
+    // 应用用户的强制域
     if (forced_domain_ >= 0)
     {
         domainId = forced_domain_;
     }
 
-    // If the user has specified a participant property policy with command line arguments, it overrides whatever the
-    // XML configures.
+    // 如果用户已使用命令行参数指定了参与者属性策略，则该策略将覆盖 XML 配置的任何内容。
     if (PropertyPolicyHelper::length(part_property_policy) > 0)
     {
         pqos.properties(part_property_policy);
     }
 
-    // Set shared memory transport if it was enable/disable explicitly.
+    // 设置共享内存传输（如果显式启用/禁用）。
     if (Arg::EnablerValue::ON == shared_memory_)
     {
         std::shared_ptr<eprosima::fastdds::rtps::SharedMemTransportDescriptor> shm_transport =
@@ -162,38 +147,38 @@ bool LatencyTestSubscriber::init(
         pqos.transport().use_builtin_transports = false;
     }
 
-    // Create the participant
+    // 创建participant
     participant_ = DomainParticipantFactory::get_instance()->create_participant(domainId, pqos);
     if (participant_ == nullptr)
     {
         return false;
     }
 
-    // Register the command type
+    // 注册command type
     if (ReturnCode_t::RETCODE_OK != latency_command_type_.register_type(participant_))
     {
-        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "ERROR registering the COMMAND type");
+        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "注册 COMMAND type 时出错");
         return false;
     }
 
-    /* Create Publisher */
+    /* 创建 Publisher */
     publisher_ = participant_->create_publisher(PUBLISHER_QOS_DEFAULT, nullptr);
     if (publisher_ == nullptr)
     {
-        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "ERROR creating PUBLISHER");
+        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "创建 PUBLISHER 时出错");
         return false;
     }
 
-    /* Create Subscriber */
+    /* 创建 Subscriber */
     subscriber_ = participant_->create_subscriber(SUBSCRIBER_QOS_DEFAULT, nullptr);
     if (subscriber_ == nullptr)
     {
-        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "ERROR creating SUBSCRIBER");
+        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "创建 SUBSCRIBER 时出错");
         return false;
     }
 
     {
-        /* Update DataWriterQoS with xml profile data */
+        /* 使用 xml 配置文件数据更新 DataWriter 的 QoS */
         if (xml_config_file_.length() > 0 )
         {
             std::string sub_profile_name = "sub_subscriber_profile";
@@ -202,17 +187,17 @@ bool LatencyTestSubscriber::init(
             if ( ReturnCode_t::RETCODE_OK != publisher_->get_datawriter_qos_from_profile(pub_profile_name, dw_qos_))
             {
                 EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER,
-                        "ERROR unable to retrieve the " << pub_profile_name << "from XML file");
+                        "错误:无法检索 " << pub_profile_name << " 这个xml文件");
                 return false;
             }
 
             if ( ReturnCode_t::RETCODE_OK != subscriber_->get_datareader_qos_from_profile(sub_profile_name, dr_qos_))
             {
-                EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "ERROR unable to retrieve the " << sub_profile_name);
+                EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "错误:无法检索 " << sub_profile_name);
                 return false;
             }
         }
-        // Create QoS Profiles
+        // 创建 QoS 配置文件
         else
         {
             ReliabilityQosPolicy rp;
@@ -240,7 +225,7 @@ bool LatencyTestSubscriber::init(
             dr_qos_.endpoint().history_memory_policy = MemoryManagementPolicy::PREALLOCATED_WITH_REALLOC_MEMORY_MODE;
         }
 
-        // Set data sharing according with cli.
+        // 根据 cli 设置数据共享。
         if (Arg::EnablerValue::ON == data_sharing_)
         {
             DataSharingQosPolicy dsp;
@@ -256,7 +241,7 @@ bool LatencyTestSubscriber::init(
             dr_qos_.data_sharing(dsp);
         }
 
-        // Increase payload pool size to prevent loan failures due to outages
+        // 增加有效负载池大小以防止因中断而导致贷款失败
         if (data_loans_)
         {
             dw_qos_.resource_limits().extra_samples = 30;
@@ -264,7 +249,7 @@ bool LatencyTestSubscriber::init(
         }
     }
 
-    /* Create Topics */
+    /* 创建 Topics */
     {
         std::ostringstream topic_name;
         topic_name.str("");
@@ -308,7 +293,7 @@ bool LatencyTestSubscriber::init(
         }
     }
 
-    /* Create Command Writer */
+    /* 创建 Command Writer */
     {
         DataWriterQos cw_qos;
         cw_qos.history().kind = KEEP_ALL_HISTORY_QOS;
@@ -327,7 +312,7 @@ bool LatencyTestSubscriber::init(
         }
     }
 
-    /* Create Command Reader */
+    /* 创建 Command Reader */
     {
         DataReaderQos cr_qos;
         cr_qos.history().kind = KEEP_ALL_HISTORY_QOS;
@@ -345,16 +330,16 @@ bool LatencyTestSubscriber::init(
         }
     }
 
-    // Endpoints using dynamic data endpoints span the whole test duration
-    // Static types and endpoints are created for each payload iteration
+    // 使用动态数据终端节点的终端节点跨越整个测试持续时间
+    // 为每个有效负载迭代创建静态类型和终结点
     return dynamic_types_ ? init_dynamic_types() && create_data_endpoints() : true;
 }
 
 /*
- * Our current inplementation of MatchedStatus info:
- * - total_count(_change) holds the actual number of matches
- * - current_count(_change) is a flag to signal match or unmatch.
- *   (TODO: review if fits standard definition)
+ * 我们当前更新的匹配状态信息:
+ * - total_count(_change) 保存实际匹配数
+ * - current_count(_change) 是信号匹配或不匹配的标志.
+ *   (TODO: 查看是否符合标准定义)
  * */
 
 void LatencyTestSubscriber::LatencyDataWriterListener::on_publication_matched(
@@ -369,7 +354,7 @@ void LatencyTestSubscriber::LatencyDataWriterListener::on_publication_matched(
 
     if (info.current_count_change > 0)
     {
-        EPROSIMA_LOG_INFO(LatencyTest, C_MAGENTA << "Data Pub Matched" << C_DEF);
+        EPROSIMA_LOG_INFO(LatencyTest, C_MAGENTA << "Data Pub 已匹配" << C_DEF);
     }
 
     lock.unlock();
@@ -388,7 +373,7 @@ void LatencyTestSubscriber::LatencyDataReaderListener::on_subscription_matched(
 
     if (info.current_count_change > 0)
     {
-        EPROSIMA_LOG_INFO(LatencyTest, C_MAGENTA << "Data Sub Matched" << C_DEF);
+        EPROSIMA_LOG_INFO(LatencyTest, C_MAGENTA << "Data Sub 已匹配" << C_DEF);
     }
 
     lock.unlock();
@@ -407,7 +392,7 @@ void LatencyTestSubscriber::ComandWriterListener::on_publication_matched(
 
     if (info.current_count_change > 0)
     {
-        EPROSIMA_LOG_INFO(LatencyTest, C_MAGENTA << "Command Pub Matched" << C_DEF);
+        EPROSIMA_LOG_INFO(LatencyTest, C_MAGENTA << "Command Pub 已匹配" << C_DEF);
     }
 
     lock.unlock();
@@ -426,7 +411,7 @@ void LatencyTestSubscriber::CommandReaderListener::on_subscription_matched(
 
     if (info.current_count_change > 0)
     {
-        EPROSIMA_LOG_INFO(LatencyTest, C_MAGENTA << "Command Sub Matched" << C_DEF);
+        EPROSIMA_LOG_INFO(LatencyTest, C_MAGENTA << "Command Sub 已匹配" << C_DEF);
     }
 
     lock.unlock();
@@ -451,17 +436,17 @@ void LatencyTestSubscriber::CommandReaderListener::on_data_available(
         switch ( command.m_command )
         {
             case READY:
-                log << "Publisher has new test ready...";
+                log << "Publisher 已准备好新的测试...";
                 break;
             case STOP:
-                log << "Publisher has stopped the test";
+                log << "Publisher 已经停止测试";
                 break;
             case STOP_ERROR:
-                log << "Publisher has canceled the test";
+                log << "Publisher 已经取消测试";
                 latency_subscriber_->test_status_ = -1;
                 break;
             default:
-                log << "Something is wrong";
+                log << "出错了";
                 break;
         }
 
@@ -479,7 +464,7 @@ void LatencyTestSubscriber::CommandReaderListener::on_data_available(
     }
     else
     {
-        log << "Problem reading command message";
+        log << "读取命令消息时出现问题";
     }
 
     EPROSIMA_LOG_INFO(LatencyTest, log.str());
@@ -490,45 +475,44 @@ void LatencyTestSubscriber::LatencyDataReaderListener::on_data_available(
 {
     auto sub = latency_subscriber_;
 
-    // Bounce back the message from the Publisher as fast as possible
-    // dynamic_data_ and latency_data_type do not require locks
-    // because the command message exchange assures this calls atomicity
+    // 尽快从Publsiher反弹消息 dynamic_data_ 并且latency_data_type不需要锁定
+    // 因为命令消息交换可确保此调用原子性
     if (sub->data_loans_)
     {
         SampleInfoSeq infos;
         LoanableSequence<LatencyType> data_seq;
-        // reader loan buffer
+        // 读取器的借贷缓冲
         LatencyType* echoed_data = nullptr;
-        // writer loan buffer
+        // 编写器的借贷缓冲
         void* echoed_loan = nullptr;
 
         if (ReturnCode_t::RETCODE_OK != reader->take(data_seq, infos, 1))
         {
-            EPROSIMA_LOG_INFO(LatencyTest, "Problem reading Subscriber echoed loaned test data");
+            EPROSIMA_LOG_INFO(LatencyTest, "读取时出现问题 用户回显借出的测试数据");
             return;
         }
 
-        // we have requested a single sample
+        // 我们请求一个单独的样品
         assert(infos.length() == 1 && data_seq.length() == 1);
-        // the buffer must be there
+        // 缓冲区必须存在
         assert(sub->latency_data_ != nullptr);
-        // reference the loan
+        // 引用loan
         echoed_data = &data_seq[0];
 
-        // echo the sample
+        // 回显样本
         if (sub->echo_)
         {
-            // begin measuring overhead = loan->buffer copy + write loan + buffer->loan copy
+            // 开始测量开销 = 贷款>缓冲区拷贝 + 写入借出 + 缓冲>借拷贝
             auto start_time = std::chrono::steady_clock::now();
 
-            // Copy the data from reader loan to aux buffer
+            // 将数据从读卡器借出复制到辅助缓冲区
             auto data_type = std::static_pointer_cast<LatencyDataType>(sub->latency_data_type_);
             data_type->copy_data(*echoed_data, *sub->latency_data_);
 
-            // release the reader loan
+            // 释放reader loan
             if (ReturnCode_t::RETCODE_OK != reader->return_loan(data_seq, infos))
             {
-                EPROSIMA_LOG_INFO(LatencyTest, "Problem returning loaned test data");
+                EPROSIMA_LOG_INFO(LatencyTest, "返回借用的测试数据时出现问题");
                 return;
             }
 
@@ -546,38 +530,38 @@ void LatencyTestSubscriber::LatencyDataReaderListener::on_data_available(
 
                 if (!loaned)
                 {
-                    EPROSIMA_LOG_ERROR(LatencyTest, "Subscriber trying to loan: " << trials);
+                    EPROSIMA_LOG_ERROR(LatencyTest, "Subscriber 尝试 loan: " << trials);
                 }
             }
 
             if (!loaned)
             {
-                EPROSIMA_LOG_INFO(LatencyTest, "Problem echoing Publisher test data with loan");
-                // release the reader loan
+                EPROSIMA_LOG_INFO(LatencyTest, "使用借出回显发布者测试数据时出现问题");
+                // 释放reader loan
                 reader->return_loan(data_seq, infos);
                 return;
             }
 
-            // copy the data from aux buffer to writer loan
+            // 将数据从辅助缓冲区复制到写入器借用
             data_type->copy_data(*sub->latency_data_, *(LatencyType*)echoed_loan);
 
-            //end measuring overhead
+            // 终端测量开销
             auto end_time = std::chrono::steady_clock::now();
             std::chrono::duration<uint32_t, std::nano> bounce_time(end_time - start_time);
             reinterpret_cast<LatencyType*>(echoed_loan)->bounce = bounce_time.count();
 
             if (!sub->data_writer_->write(echoed_loan))
             {
-                EPROSIMA_LOG_ERROR(LatencyTest, "Problem echoing Publisher test data with loan");
+                EPROSIMA_LOG_ERROR(LatencyTest, "使用借出回显发布者测试数据时出现问题");
                 sub->data_writer_->discard_loan(echoed_loan);
             }
         }
         else
         {
-            // release the loan
+            // 发放贷款
             if (ReturnCode_t::RETCODE_OK != reader->return_loan(data_seq, infos))
             {
-                EPROSIMA_LOG_ERROR(LatencyTest, "Problem returning loaned test data");
+                EPROSIMA_LOG_ERROR(LatencyTest, "返回借用的测试数据时出现问题");
             }
         }
     }
@@ -594,35 +578,35 @@ void LatencyTestSubscriber::LatencyDataReaderListener::on_data_available(
         {
             if (sub->echo_)
             {
-                // no bounce overload recorded
+                // 没有反弹过载记录
                 reinterpret_cast<LatencyType*>(data)->bounce = 0;
 
                 if (!sub->data_writer_->write(data))
                 {
-                    EPROSIMA_LOG_INFO(LatencyTest, "Problem echoing Publisher test data");
+                    EPROSIMA_LOG_INFO(LatencyTest, "回显Publisher测试数据时出现问题");
                 }
             }
         }
         else
         {
-            EPROSIMA_LOG_INFO(LatencyTest, "Problem reading Publisher test data");
+            EPROSIMA_LOG_INFO(LatencyTest, "读取Publisher测试数据时出现问题");
         }
     }
 }
 
 void LatencyTestSubscriber::run()
 {
-    // WAIT FOR THE DISCOVERY PROCESS FO FINISH ONLY FOR DYNAMIC CASE:
-    // EACH SUBSCRIBER NEEDS:
-    // DYNAMIC TYPES: 4 Matchings (2 publishers and 2 subscribers)
-    // STATIC TYPES: 2 Matchings (1 command publisher and 1 command subscriber)
+    // 等待发现过程完成，仅适用于动态案例:
+    // 每个订阅者需要:
+    // DYNAMIC TYPES: 4个匹配 (2 个 publishers 和 2 个 subscribers)
+    // STATIC TYPES: 2个匹配 (1 个 command publisher 和 1 个 command subscriber)
     wait_for_discovery(
         [this]() -> bool
         {
             return total_matches() == (dynamic_types_ ? 4 : 2);
         });
 
-    EPROSIMA_LOG_INFO(LatencyTest, C_B_MAGENTA << "Sub: DISCOVERY COMPLETE " << C_DEF);
+    EPROSIMA_LOG_INFO(LatencyTest, C_B_MAGENTA << "Sub: 完成发现 " << C_DEF);
 
     for (std::vector<uint32_t>::iterator payload = data_size_sub_.begin(); payload != data_size_sub_.end(); ++payload)
     {
@@ -636,11 +620,10 @@ void LatencyTestSubscriber::run()
 bool LatencyTestSubscriber::test(
         uint32_t datasize)
 {
-    EPROSIMA_LOG_INFO(LatencyTest, "Preparing test with data size: " << datasize );
+    EPROSIMA_LOG_INFO(LatencyTest, "准备测试的数据大小: " << datasize );
 
-    // Wait for the Publisher READY command
-    // Assures that LatencyTestSubscriber|Publisher data endpoints creation and
-    // destruction is sequential
+    // 等待Publisher就绪命令
+    // 保证 LatencyTestSubscriber|Publisher 数据终结点的创建和销毁是按顺序进行的
     wait_for_command(
         [this]()
         {
@@ -649,22 +632,22 @@ bool LatencyTestSubscriber::test(
 
     if (dynamic_types_)
     {
-        // Create the data sample
+        // 创建数据样本
         MemberId id;
         dynamic_data_ = static_cast<DynamicData*>(dynamic_pub_sub_type_->createData());
 
         if (nullptr == dynamic_data_)
         {
-            EPROSIMA_LOG_ERROR(LatencyTest, "Iteration failed: Failed to create Dynamic Data");
+            EPROSIMA_LOG_ERROR(LatencyTest, "迭代失败:无法创建动态数据");
             return false;
         }
 
-        // Modify the data Sample
+        // 修改数据样本
         DynamicData* member_data = dynamic_data_->loan_value(
             dynamic_data_->get_member_id_at_index(1));
 
-        // fill until complete the desired payload size
-        uint32_t padding = datasize - 4; // sequence number is a DWORD
+        // 填充直到完成所需的有效负载大小
+        uint32_t padding = datasize - 4; // 序列号是 DWORD
 
         for (uint32_t i = 0; i < padding; ++i)
         {
@@ -673,13 +656,13 @@ bool LatencyTestSubscriber::test(
         }
         dynamic_data_->return_loaned_value(member_data);
     }
-    // Create the static type for the given buffer size and the endpoints
+    // 为给定的缓冲区大小和终结点创建静态类型
     else if (init_static_types(datasize) && create_data_endpoints())
     {
-        // Create the data sample as buffer
+        // 创建数据示例作为缓冲区
         latency_data_ = static_cast<LatencyType*>(latency_data_type_.create_data());
 
-        // Wait for new endponts discovery from the LatencyTestPublisher
+        // 等待来自 LatencyTestPublisher 的 endponts discovery
         wait_for_discovery(
             [this]() -> bool
             {
@@ -688,31 +671,31 @@ bool LatencyTestSubscriber::test(
     }
     else
     {
-        EPROSIMA_LOG_ERROR(LatencyTest, "Error preparing static types and endpoints for testing");
+        EPROSIMA_LOG_ERROR(LatencyTest, "准备用于测试的静态类型和终结点时出错");
         return false;
     }
 
-    // Send to Publisher the BEGIN command
+    // 将 BEGIN 命令发送到Publisher
     test_status_ = 0;
     received_ = 0;
     TestCommandType command;
     command.m_command = BEGIN;
     if (!command_writer_->write(&command))
     {
-        EPROSIMA_LOG_ERROR(LatencyTest, "Subscriber fail to publish the BEGIN command");
+        EPROSIMA_LOG_ERROR(LatencyTest, "Subscriber无法发布 BEGIN 命令");
         return false;
     }
 
-    EPROSIMA_LOG_INFO(LatencyTest, "Testing with data size: " << datasize);
+    EPROSIMA_LOG_INFO(LatencyTest, "测试的数据大小: " << datasize);
 
-    // Wait for the STOP or STOP_ERROR commands
+    // 等待 STOP 或 STOP_ERROR 命令
     wait_for_command(
         [this]()
         {
             return command_msg_count_ != 0;
         });
 
-    EPROSIMA_LOG_INFO(LatencyTest, "TEST OF SIZE: " << datasize << " ENDS");
+    EPROSIMA_LOG_INFO(LatencyTest, "测试大小: " << datasize << " ENDS");
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     if (dynamic_types_)
@@ -720,20 +703,20 @@ bool LatencyTestSubscriber::test(
         dynamic_pub_sub_type_->deleteData(dynamic_data_);
         // DynamicDataFactory::get_instance()->delete_data(dynamic_data_);
         //
-        // Reset history for the new test
+        // 重置新测试的历史记录
         size_t removed;
         data_writer_->clear_history(&removed);
     }
     else
     {
-        // release the buffer next iteration will require different size
+        // 释放缓冲区下次迭代将需要不同的大小
         latency_data_type_->deleteData(latency_data_);
 
-        // Remove endpoints associated to the given payload size
+        // 删除与给定有效负载大小关联的终结点
         if (!destroy_data_endpoints())
         {
             EPROSIMA_LOG_ERROR(LatencyTest,
-                    "Static endpoints for payload size " << datasize << " could not been removed");
+                    "有效负载大小为：" << datasize << " 的静态终结点不能被移除！");
         }
     }
 
@@ -745,14 +728,14 @@ bool LatencyTestSubscriber::test(
     command.m_command = END;
     if (!command_writer_->write(&command))
     {
-        EPROSIMA_LOG_ERROR(LatencyTest, "Subscriber fail to publish the END command");
+        EPROSIMA_LOG_ERROR(LatencyTest, "Subscriber无法发布 END 命令");
         return false;
     }
 
-    // prevent the LatencyTestSubscriber from been destroyed while LatencyTestPublisher is waitin for the END command.
+    // 防止 LatencyTestSubscriber 在 LatencyTestPublisher 等待 END 命令时被销毁。
     if ( ReturnCode_t::RETCODE_OK != command_writer_->wait_for_acknowledgments(eprosima::fastrtps::c_TimeInfinite))
     {
-        EPROSIMA_LOG_ERROR(LatencyTest, "Subscriber fail to acknowledge the END command");
+        EPROSIMA_LOG_ERROR(LatencyTest, "Subscriber无法确认 END 命令");
         return false;
     }
 
@@ -761,16 +744,15 @@ bool LatencyTestSubscriber::test(
 
 int32_t LatencyTestSubscriber::total_matches() const
 {
-    // no need to lock because is used always within a
-    // condition variable wait predicate
+    // 无需锁定，因为始终在条件变量等待谓词中使用
 
     int32_t count = data_writer_listener_.get_matches()
             + data_reader_listener_.get_matches()
             + command_writer_listener_.get_matches()
             + command_reader_listener_.get_matches();
 
-    // Each endpoint has a mirror counterpart in the LatencyTestPublisher
-    // thus, the maximun number of matches is 4
+    // 每个端点在 LatencyTestPublisher 中都有一个镜像对应项
+    // 因此，最大匹配数为 4
     assert(count >= 0 && count < 5);
     return count;
 }
@@ -779,33 +761,33 @@ bool LatencyTestSubscriber::init_dynamic_types()
 {
     assert(participant_ != nullptr);
 
-    // Check if it has been initialized before
+    // 检查之前是否已经初始化过
     if (dynamic_pub_sub_type_)
     {
-        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "ERROR DYNAMIC DATA type already initialized");
+        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "错误: DYNAMIC DATA type 已经初始化过");
         return false;
     }
     else if (participant_->find_type(LatencyDataType::type_name_))
     {
-        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "ERROR DYNAMIC DATA type already registered");
+        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "错误: DYNAMIC DATA type 已经注册过");
         return false;
     }
 
-    // Dummy type registration
-    // Create basic builders
+    // 虚拟类型注册
+    // 创建基本构建器
     DynamicTypeBuilder_ptr struct_type_builder(DynamicTypeBuilderFactory::get_instance()->create_struct_builder());
 
-    // Add members to the struct.
+    // 向结构添加成员。
     struct_type_builder->add_member(0, "seqnum", DynamicTypeBuilderFactory::get_instance()->create_uint32_type());
     struct_type_builder->add_member(1, "data", DynamicTypeBuilderFactory::get_instance()->create_sequence_builder(
                 DynamicTypeBuilderFactory::get_instance()->create_byte_type(), BOUND_UNLIMITED));
     struct_type_builder->set_name(LatencyDataType::type_name_);
     dynamic_pub_sub_type_.reset(new DynamicPubSubType(struct_type_builder->build()));
 
-    // Register the data type
+    // 注册数据类型
     if (ReturnCode_t::RETCODE_OK != dynamic_pub_sub_type_.register_type(participant_))
     {
-        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "ERROR registering the DYNAMIC DATA type");
+        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "注册 DYNAMIC DATA type 时出错");
         return false;
     }
 
@@ -817,27 +799,27 @@ bool LatencyTestSubscriber::init_static_types(
 {
     assert(participant_ != nullptr);
 
-    // Check if it has been initialized before
+    // 检查之前是否已经初始化过
     if (latency_data_type_)
     {
-        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "ERROR STATIC DATA type already initialized");
+        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "错误: STATIC DATA type 已经初始化过");
         return false;
     }
     else if (participant_->find_type(LatencyDataType::type_name_))
     {
-        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "ERROR STATIC DATA type already registered");
+        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "错误: STATIC DATA type 已经注册过");
         return false;
     }
 
-    // calculate the padding for the desired demand
+    // 计算所需需求的填充
     ::size_t padding = payload - LatencyType::overhead;
     assert(padding > 0);
-    // Create the static type
+    // 创建静态类型
     latency_data_type_.reset(new LatencyDataType(padding));
-    // Register the static type
+    // 注册静态类型
     if (ReturnCode_t::RETCODE_OK != latency_data_type_.register_type(participant_))
     {
-        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "ERROR registering the STATIC DATA type");
+        EPROSIMA_LOG_ERROR(LATENCYSUBSCRIBER, "注册 STATIC DATA type 时出错");
         return false;
     }
 
@@ -849,23 +831,23 @@ bool LatencyTestSubscriber::create_data_endpoints()
     if (nullptr != latency_data_sub_topic_
             || nullptr != latency_data_pub_topic_)
     {
-        EPROSIMA_LOG_ERROR(LatencyTest, "ERROR topics already initialized");
+        EPROSIMA_LOG_ERROR(LatencyTest, "错误: topics 已经初始化过");
         return false;
     }
 
     if (nullptr != data_writer_)
     {
-        EPROSIMA_LOG_ERROR(LatencyTest, "ERROR data_writer_ already initialized");
+        EPROSIMA_LOG_ERROR(LatencyTest, "错误: data_writer_ 已经初始化过");
         return false;
     }
 
     if (nullptr != data_reader_)
     {
-        EPROSIMA_LOG_ERROR(LatencyTest, "ERROR data_reader_ already initialized");
+        EPROSIMA_LOG_ERROR(LatencyTest, "错误: data_reader_ 已经初始化过");
         return false;
     }
 
-    // Create the topic
+    // 创建 topic
     std::ostringstream topic_name;
     topic_name << "LatencyTest_";
     if (hostname_)
@@ -881,11 +863,11 @@ bool LatencyTestSubscriber::create_data_endpoints()
 
     if (nullptr == latency_data_sub_topic_)
     {
-        EPROSIMA_LOG_ERROR(LatencyTest, "ERROR creating the DATA TYPE for the subscriber data reader topic");
+        EPROSIMA_LOG_ERROR(LatencyTest, "为subscriber data reader topic创建DATA TYPE时出错");
         return false;
     }
 
-    /* Create Topics */
+    /* 创建 Topics */
     topic_name.str("");
     topic_name.clear();
     topic_name << "LatencyTest_";
@@ -903,18 +885,18 @@ bool LatencyTestSubscriber::create_data_endpoints()
 
     if (latency_data_pub_topic_ == nullptr)
     {
-        EPROSIMA_LOG_ERROR(LatencyTest, "ERROR creating the DATA TYPE for the subscriber data writer topic");
+        EPROSIMA_LOG_ERROR(LatencyTest, "为subscriber data writer topic创建DATA TYPE时出错");
         return false;
     }
 
-    // Create the endpoints
+    // 创建endpoints
     if (nullptr ==
             (data_writer_ = publisher_->create_datawriter(
                 latency_data_pub_topic_,
                 dw_qos_,
                 &data_writer_listener_)))
     {
-        EPROSIMA_LOG_ERROR(LatencyTest, "ERROR creating the subscriber data writer");
+        EPROSIMA_LOG_ERROR(LatencyTest, "创建subscriber data writer时出错");
         return false;
     }
 
@@ -924,7 +906,7 @@ bool LatencyTestSubscriber::create_data_endpoints()
                 dr_qos_,
                 &data_reader_listener_)))
     {
-        EPROSIMA_LOG_ERROR(LatencyTest, "ERROR creating the subscriber data reader");
+        EPROSIMA_LOG_ERROR(LatencyTest, "创建subscriber data reader时出错");
         return false;
     }
 
@@ -937,11 +919,11 @@ bool LatencyTestSubscriber::destroy_data_endpoints()
     assert(nullptr != publisher_);
     assert(nullptr != subscriber_);
 
-    // Delete the endpoints
+    // 删除endpoints
     if (nullptr == data_writer_
             || ReturnCode_t::RETCODE_OK != publisher_->delete_datawriter(data_writer_))
     {
-        EPROSIMA_LOG_ERROR(LatencyTest, "ERROR destroying the DataWriter");
+        EPROSIMA_LOG_ERROR(LatencyTest, "销毁DataWriter时出错");
         return false;
     }
     data_writer_ = nullptr;
@@ -950,33 +932,33 @@ bool LatencyTestSubscriber::destroy_data_endpoints()
     if (nullptr == data_reader_
             || ReturnCode_t::RETCODE_OK != subscriber_->delete_datareader(data_reader_))
     {
-        EPROSIMA_LOG_ERROR(LatencyTest, "ERROR destroying the DataReader");
+        EPROSIMA_LOG_ERROR(LatencyTest, "销毁DataReader时出错");
         return false;
     }
     data_reader_ = nullptr;
     data_reader_listener_.reset();
 
-    // Delete the Topics
+    // 删除Topics
     if (nullptr == latency_data_pub_topic_
             || ReturnCode_t::RETCODE_OK != participant_->delete_topic(latency_data_pub_topic_))
     {
-        EPROSIMA_LOG_ERROR(LatencyTest, "ERROR destroying the DATA pub topic");
+        EPROSIMA_LOG_ERROR(LatencyTest, "销毁DATA pub topic时出错");
         return false;
     }
     latency_data_pub_topic_ = nullptr;
     if (nullptr == latency_data_sub_topic_
             || ReturnCode_t::RETCODE_OK != participant_->delete_topic(latency_data_sub_topic_))
     {
-        EPROSIMA_LOG_ERROR(LatencyTest, "ERROR destroying the DATA sub topic");
+        EPROSIMA_LOG_ERROR(LatencyTest, "销毁the DATA sub topic时出错");
         return false;
     }
     latency_data_sub_topic_ = nullptr;
 
-    // Delete the Type
+    // 删除Type
     if (ReturnCode_t::RETCODE_OK
             != participant_->unregister_type(LatencyDataType::type_name_))
     {
-        EPROSIMA_LOG_ERROR(LatencyTest, "ERROR unregistering the DATA type");
+        EPROSIMA_LOG_ERROR(LatencyTest, "注销DATA type时出错");
         return false;
     }
 

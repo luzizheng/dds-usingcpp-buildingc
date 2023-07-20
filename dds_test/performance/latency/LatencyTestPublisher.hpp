@@ -1,17 +1,3 @@
-// Copyright 2016 Proyectos y Sistemas de Mantenimiento SL (eProsima).
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 /**
  * @file LatencyPublisher.h
  *
@@ -179,7 +165,7 @@ private:
     std::vector<TimeStats> stats_;
     uint64_t raw_sample_count_ = 0;
 
-    /* Test synchronization */
+    /* 测试同步 */
     std::mutex mutex_;
     std::condition_variable discovery_cv_;
     std::condition_variable command_msg_cv_;
@@ -189,7 +175,7 @@ private:
     unsigned int received_count_ = 0;
     int test_status_ = 0;
 
-    /* Files */
+    /* 文件 */
     constexpr static uint32_t MINIMUM_INDEX = 0;
     constexpr static uint32_t AVERAGE_INDEX = 1;
     constexpr static uint32_t DATA_BASE_INDEX = 2;
@@ -198,7 +184,7 @@ private:
     std::string raw_data_file_;
     std::string export_prefix_;
 
-    /* Test configuration and Flags */
+    /* 测试配置和标志 */
     bool export_csv_ = false;
     bool reliable_ = false;
     bool dynamic_types_ = false;

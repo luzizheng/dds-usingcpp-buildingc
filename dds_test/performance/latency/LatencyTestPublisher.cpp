@@ -1,17 +1,3 @@
-// Copyright 2016 Proyectos y Sistemas de Mantenimiento SL (eProsima).
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 /**
  * @file LatencyPublisher.cpp
  *
@@ -54,7 +40,7 @@ LatencyTestPublisher::LatencyTestPublisher()
 
 LatencyTestPublisher::~LatencyTestPublisher()
 {
-    // Static type endpoints shpuld have been removed for each payload iteration
+    // 已为每个有效负载迭代删除静态类型终结点 shpuld
     if (dynamic_types_)
     {
         destroy_data_endpoints();
@@ -104,7 +90,7 @@ bool LatencyTestPublisher::init(
         int forced_domain,
         LatencyDataSizes& latency_data_sizes)
 {
-    // Initialize state
+    // 初始化状态
     xml_config_file_ = xml_config_file;
     samples_ = samples;
     subscribers_ = subscribers;
@@ -122,7 +108,7 @@ bool LatencyTestPublisher::init(
 
     data_size_pub_ = latency_data_sizes.sample_sizes();
 
-    // Init output files
+    // 初始化输出文件
     output_files_.push_back(std::make_shared<std::stringstream>());
     output_files_.push_back(std::make_shared<std::stringstream>());
 
@@ -130,10 +116,10 @@ bool LatencyTestPublisher::init(
 
     for (std::vector<uint32_t>::iterator it = data_size_pub_.begin(); it != data_size_pub_.end(); ++it)
     {
-        // Reliability
+        // 可靠性
         std::string str_reliable = reliable_ ? "reliable" : "besteffort";
 
-        // Summary files
+        // 摘要文件
         *output_files_[MINIMUM_INDEX] << "\"" << samples_ << " samples of " << *it << " bytes (us)\"";
         *output_files_[AVERAGE_INDEX] << "\"" << samples_ << " samples of " << *it << " bytes (us)\"";
 
@@ -153,17 +139,17 @@ bool LatencyTestPublisher::init(
     *output_files_[MINIMUM_INDEX] << std::endl;
     *output_files_[AVERAGE_INDEX] << std::endl;
 
-    /* Create DomainParticipant*/
+    /* 创建 DomainParticipant*/
     std::string participant_profile_name = "pub_participant_profile";
     DomainParticipantQos pqos;
 
-    // Default domain
+    // 默认 domain
     DomainId_t domainId = pid % 230;
 
-    // Default participant name
+    // 默认 participant 名称
     pqos.name("latency_test_publisher");
 
-    // Load XML configuration
+    // 加载 XML 配置
     if (xml_config_file_.length() > 0)
     {
         if ( ReturnCode_t::RETCODE_OK !=
@@ -176,20 +162,19 @@ bool LatencyTestPublisher::init(
         }
     }
 
-    // Apply user's force domain
+    // 应用用户的强制域
     if (forced_domain_ >= 0)
     {
         domainId = forced_domain_;
     }
 
-    // If the user has specified a participant property policy with command line arguments, it overrides whatever the
-    // XML configures.
+    // 如果用户已使用命令行参数指定了参与者属性策略，则该策略将覆盖 XML 配置的任何内容。
     if (PropertyPolicyHelper::length(part_property_policy) > 0)
     {
         pqos.properties(part_property_policy);
     }
 
-    // Set shared memory transport if it was enable/disable explicitly.
+    // 设置共享内存传输（如果已经被显式启用/禁用）。
     if (Arg::EnablerValue::ON == shared_memory_)
     {
         std::shared_ptr<eprosima::fastdds::rtps::SharedMemTransportDescriptor> shm_transport =
@@ -208,7 +193,7 @@ bool LatencyTestPublisher::init(
         pqos.transport().use_builtin_transports = false;
     }
 
-    // Create the participant
+    // 创建participant
     participant_ =
             DomainParticipantFactory::get_instance()->create_participant(domainId, pqos);
 
@@ -217,14 +202,14 @@ bool LatencyTestPublisher::init(
         return false;
     }
 
-    // Register the command type
+    // 注册命令类型
     if (ReturnCode_t::RETCODE_OK != latency_command_type_.register_type(participant_))
     {
         EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "ERROR registering the COMMAND type");
         return false;
     }
 
-    /* Create Publisher */
+    /* 创建Publisher */
     publisher_ = participant_->create_publisher(PUBLISHER_QOS_DEFAULT, nullptr);
     if (publisher_ == nullptr)
     {
@@ -232,7 +217,7 @@ bool LatencyTestPublisher::init(
         return false;
     }
 
-    /* Create Subscriber */
+    /* 创建Subscriber */
     subscriber_ = participant_->create_subscriber(SUBSCRIBER_QOS_DEFAULT, nullptr);
     if (subscriber_ == nullptr)
     {
@@ -240,9 +225,9 @@ bool LatencyTestPublisher::init(
         return false;
     }
 
-    /* Create Data DataWriter and DataReader QoS Profile*/
+    /* 创建数据写入器和数据读取器 QoS 配置文件*/
     {
-        // Read profile from XML
+        // 从XML读取配置
         if (xml_config_file_.length() > 0)
         {
             std::string pub_profile_name = "pub_publisher_profile";
@@ -261,7 +246,7 @@ bool LatencyTestPublisher::init(
                         "ERROR unable to retrive the " << sub_profile_name << "from XML file");
             }
         }
-        // Create QoS Profiles
+        // 创建 QoS 配置
         else
         {
             ReliabilityQosPolicy rp;
@@ -289,7 +274,7 @@ bool LatencyTestPublisher::init(
             dr_qos_.endpoint().history_memory_policy = MemoryManagementPolicy::PREALLOCATED_WITH_REALLOC_MEMORY_MODE;
         }
 
-        // Set data sharing according with cli.
+        // 根据 cli 设置数据共享。
         if (Arg::EnablerValue::ON == data_sharing_)
         {
             DataSharingQosPolicy dsp;
@@ -305,7 +290,7 @@ bool LatencyTestPublisher::init(
             dr_qos_.data_sharing(dsp);
         }
 
-        // Increase payload pool size to prevent loan failures due to outages
+        // 增加有效负载池大小以防止因中断而导致贷款失败
         if (data_loans_)
         {
             dw_qos_.resource_limits().extra_samples = 30;
@@ -313,7 +298,7 @@ bool LatencyTestPublisher::init(
         }
     }
 
-    /* Create Topics */
+    /* 创建Topics */
     {
         std::ostringstream topic_name;
         topic_name.str("");
@@ -358,7 +343,7 @@ bool LatencyTestPublisher::init(
     }
 
 
-    /* Create Command Writer */
+    /* 创建Writer */
     DataWriterQos cw_qos;
     cw_qos.history().kind = KEEP_ALL_HISTORY_QOS;
     cw_qos.durability().durabilityKind(TRANSIENT_LOCAL);
@@ -375,7 +360,7 @@ bool LatencyTestPublisher::init(
         return false;
     }
 
-    /* Create Command Reader */
+    /* 创建Reader */
     {
         DataReaderQos cr_qos;
         cr_qos.history().kind = KEEP_ALL_HISTORY_QOS;
@@ -393,7 +378,7 @@ bool LatencyTestPublisher::init(
         }
     }
 
-    /* Calculate Overhead */
+    /* 计算开销 */
     start_time_ = std::chrono::steady_clock::now();
     for (int i = 0; i < 1000; ++i)
     {
@@ -402,7 +387,7 @@ bool LatencyTestPublisher::init(
     overhead_time_ = std::chrono::duration<double, std::micro>(end_time_ - start_time_) / 1001;
     std::cout << "Overhead " << overhead_time_.count() << " us" << std::endl;
 
-    /* Create the raw_data_file and add the header */
+    /* 创建raw_data_file并添加标头 */
     if (raw_data_file_ != "")
     {
         raw_sample_count_ = 0;
@@ -411,16 +396,16 @@ bool LatencyTestPublisher::init(
         data_file << "Sample,Payload [Bytes],Latency [us]" << std::endl;
     }
 
-    // Endpoints using dynamic data endpoints span the whole test duration
-    // Static types and endpoints are created for each payload iteration
+    // 使用动态数据终端节点的终端节点跨越整个测试持续时间
+    // 为每个有效负载迭代创建静态类型和终结点
     return dynamic_types_ ? init_dynamic_types() && create_data_endpoints() : true;
 }
 
 /*
- * Our current inplementation of MatchedStatus info:
- * - total_count(_change) holds the actual number of matches
- * - current_count(_change) is a flag to signal match or unmatch.
- *   (TODO: review if fits standard definition)
+ * 我们当前更新的匹配状态信息:
+ * - total_count(_change) 保存实际匹配数量
+ * - current_count(_change) 是指示匹配或不匹配的标志。
+ *   (TODO: 查看是否符合标准定义)
  * */
 
 void LatencyTestPublisher::LatencyDataWriterListener::on_publication_matched(
@@ -548,7 +533,7 @@ void LatencyTestPublisher::LatencyDataReaderListener::on_data_available(
                 (void*)pub->dynamic_data_in_:
                 (void*)pub->latency_data_in_;
 
-        // Retrieved echoed data
+        // 检索到的回显数据
         if (reader->take_next_sample(
                     data, &info) != ReturnCode_t::RETCODE_OK
                 || !info.valid_data)
@@ -558,24 +543,24 @@ void LatencyTestPublisher::LatencyDataReaderListener::on_data_available(
         }
     }
 
-    // Atomic managemente of the sample
+    // 样品的原子管理
     bool notify = false;
     {
         std::lock_guard<std::mutex> lock(pub->mutex_);
 
         if (pub->data_loans_)
         {
-            // we have requested a single sample
+            // 请求一个单独的样品
             assert(infos.length() == 1 && data_seq.length() == 1);
-            // we have already released the former loan
+            // 已经发放了以前的贷款
             assert(pub->latency_data_in_ == nullptr);
-            // reference the loaned data
+            // 引用借出的数据
             pub->latency_data_in_ = &data_seq[0];
-            // retrieve the bounce time
+            // 检索退回时间
             bounce_time = std::chrono::duration<uint32_t, std::nano>(pub->latency_data_in_->bounce);
         }
 
-        // Check if is the expected echo message
+        // 检查是否是预期的回显消息
         if ((pub->dynamic_types_
                 && (pub->dynamic_data_in_->get_uint32_value(0)
                 != pub->dynamic_data_out_->get_uint32_value(0)))
@@ -587,15 +572,14 @@ void LatencyTestPublisher::LatencyDataReaderListener::on_data_available(
         }
         else
         {
-            // Factor of 2 below is to calculate the roundtrip divided by two. Note that nor the overhead does not
-            // need to be halved, as we access the clock twice per round trip
+
+            // 下面的系数 2 是计算往返除以 2。请注意，开销也不需要减半，因为我们每次往返两次访问时钟
             pub->end_time_ = std::chrono::steady_clock::now();
             pub->end_time_ -= bounce_time;
             auto roundtrip = std::chrono::duration<double, std::micro>(pub->end_time_ - pub->start_time_) / 2.0;
             roundtrip -= pub->overhead_time_;
 
-            // Discard samples were loan failed due to payload outages
-            // in that case the roundtrip will match the os scheduler quantum slice
+            // 丢弃样本由于有效负载中断而借出失败，在这种情况下，往返将与操作系统调度程序量子切片匹配
             if (roundtrip.count() > 0
                     && !(pub->data_loans_ && roundtrip.count() > 10000))
             {
@@ -603,7 +587,7 @@ void LatencyTestPublisher::LatencyDataReaderListener::on_data_available(
                 ++pub->received_count_;
             }
 
-            // Reset seqnum from out data
+            // 从输出数据重置序列
             if (pub->dynamic_types_)
             {
                 pub->dynamic_data_out_->set_uint32_value(0, 0);
@@ -628,11 +612,11 @@ void LatencyTestPublisher::LatencyDataReaderListener::on_data_available(
         pub->data_msg_cv_.notify_one();
     }
 
-    // release the loan if any
+    // 释放贷款（如果有）
     if (pub->data_loans_
             && ReturnCode_t::RETCODE_OK != reader->return_loan(data_seq, infos))
     {
-        EPROSIMA_LOG_ERROR(LatencyTest, "Problem returning loaned test data");
+        EPROSIMA_LOG_ERROR(LatencyTest, "返回借用的测试数据时出现问题");
     }
 }
 
@@ -654,9 +638,9 @@ void LatencyTestPublisher::run()
 
     std::string str_reliable = reliable_ ? "reliable" : "besteffort";
 
-    // Print a summary table with the measurements
-    printf("Printing round-trip times in us, statistics for %d samples\n", samples_);
-    printf("   Bytes, Samples,   stdev,    mean,     min,     50%%,     90%%,     99%%,  99.99%%,     max\n");
+    // 打印包含测量值的汇总表
+    printf("打印往返时间,统计%d个样品\n", samples_);
+    printf("   字节, 样本数,  标准差,  平均延迟时间,  最小延迟时间,     50%%,     90%%,     99%%,  99.99%%,     max\n");
     printf("--------,--------,--------,--------,--------,--------,--------,--------,--------,--------,\n");
     for (uint16_t i = 0; i < stats_.size(); i++)
     {
@@ -706,13 +690,13 @@ bool LatencyTestPublisher::test(
 
         if (nullptr == dynamic_data_in_)
         {
-            EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "Iteration failed: Failed to create Dynamic Data In");
+            EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "迭代失败:无法创建动态数据输入");
             return false;
         }
 
         if (nullptr == dynamic_data_out_)
         {
-            EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "Iteration failed: Failed to create Dynamic Data Out");
+            EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "迭代失败:无法创建动态数据输出");
             return false;
         }
 
@@ -723,8 +707,8 @@ bool LatencyTestPublisher::test(
         DynamicData* data_out = dynamic_data_out_->loan_value(
             dynamic_data_out_->get_member_id_at_index(1));
 
-        // fill until complete the desired payload size
-        uint32_t padding = datasize - 4; // sequence number is a DWORD
+        // 填充直到完成所需的有效负载大小
+        uint32_t padding = datasize - 4; // 序列号是 DWORD
 
         for (uint32_t i = 0; i < padding; ++i)
         {
@@ -741,47 +725,46 @@ bool LatencyTestPublisher::test(
     {
         if (!data_loans_)
         {
-            // Create the reception data sample
+            // 创建接收数据样本
             latency_data_in_ = static_cast<LatencyType*>(latency_data_type_->createData());
         }
-        // On loans scenario this object will be kept only to check the echoed sample is correct
-        // On the ordinary case it keeps the object to send
+        // 在贷款场景中，此对象将被保留，仅用于检查回显的样本是否正确 在普通情况下，它保留要发送的对象
         latency_data_out_ = static_cast<LatencyType*>(latency_data_type_->createData());
     }
     else
     {
-        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "Error preparing types and endpoints for testing");
+        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "准备要测试的类型和终结点时出错");
         return false;
     }
 
-    // Signal the subscribers the publisher is READY
+    // 向subscribers发出publisher已准备就绪的信号
     times_.clear();
     TestCommandType command;
     command.m_command = READY;
     if (!command_writer_->write(&command))
     {
-        EPROSIMA_LOG_ERROR(LatencyTest, "Publisher cannot publish READY command");
+        EPROSIMA_LOG_ERROR(LatencyTest, "Publisher无法发布 READY 命令");
         return false;
     }
 
-    // WAIT FOR THE DISCOVERY PROCESS FO FINISH:
-    // EACH SUBSCRIBER NEEDS 4 Matchings (2 publishers and 2 subscribers)
+    // 等待发现过程完成:
+    // 每个Subscriber需要 4 个匹配项（2 个publishers和 2 个subsribers）
     wait_for_discovery(
         [this]() -> bool
         {
             return total_matches() == 4 * subscribers_;
         });
 
-    EPROSIMA_LOG_INFO(LatencyTest, C_B_MAGENTA << "Pub: DISCOVERY COMPLETE " << C_DEF);
+    EPROSIMA_LOG_INFO(LatencyTest, C_B_MAGENTA << "Pub: 完成发现 " << C_DEF);
 
-    // Wait for Subscriber's BEGIN command
+    // 等待Subsriber的 BEGIN 命令
     wait_for_command(
         [this]()
         {
             return command_msg_count_ >= subscribers_;
         });
 
-    // The first measurement it's usually not representative, so we take one more and then drop the first one.
+    // 第一次测量通常不具有代表性，所以我们再拿一个，然后放弃第一个。
     for (unsigned int count = 1; count <= samples_ + 1; ++count)
     {
         void* data = nullptr;
@@ -794,10 +777,10 @@ bool LatencyTestPublisher::test(
         }
         else
         {
-            // Initialize the sample to send
+            // 初始化要发送的样本
             latency_data_out_->seqnum = count;
 
-            // loan each sample
+            // 借出每个样本
             if (data_loans_)
             {
                 latency_data_in_ = nullptr;
@@ -815,17 +798,17 @@ bool LatencyTestPublisher::test(
 
                     if (!loaned)
                     {
-                        EPROSIMA_LOG_INFO(LatencyTest, "Publisher trying to loan: " << trials);
+                        EPROSIMA_LOG_INFO(LatencyTest, "Publisher尝试借出: " << trials);
                     }
                 }
 
                 if (!loaned)
                 {
-                    EPROSIMA_LOG_ERROR(LatencyTest, "Problem on Publisher test data with loan");
+                    EPROSIMA_LOG_ERROR(LatencyTest, "使用借出的Publisher测试数据存在问题");
                     continue; // next iteration
                 }
 
-                // copy the data to the loan
+                // 将数据复制到借贷
                 auto data_type = std::static_pointer_cast<LatencyDataType>(latency_data_type_);
                 data_type->copy_data(*latency_data_out_, *(LatencyType*)data);
             }
@@ -834,7 +817,7 @@ bool LatencyTestPublisher::test(
                 data = latency_data_out_;
             }
 
-            // reset the reception sample data
+            // 重置接收样本数据
             if (latency_data_in_)
             {
                 latency_data_in_->seqnum = 0;
@@ -843,10 +826,10 @@ bool LatencyTestPublisher::test(
 
         start_time_ = std::chrono::steady_clock::now();
 
-        // Data publishing
+        // 数据发布中
         if (!data_writer_->write(data))
         {
-            // return the loan
+            // 归还借贷
             if (data_loans_)
             {
                 data_writer_->discard_loan(data);
@@ -857,7 +840,7 @@ bool LatencyTestPublisher::test(
         }
 
         std::unique_lock<std::mutex> lock(mutex_);
-        // the wait timeouts due possible message leaks
+        // 由于可能的消息泄漏而导致等待超时
         data_msg_cv_.wait_for(lock,
                 std::chrono::milliseconds(100),
                 [&]()
@@ -876,18 +859,17 @@ bool LatencyTestPublisher::test(
         return false;
     }
 
-    // Wait for Subscriber's END command
-    // Assures that LatencyTestSubscriber|Publisher data endpoints creation and
-    // destruction is sequential
+    // 等待Subsriber的 END 命令
+    // 保证延迟测试订阅者|发布者数据终结点的创建和销毁是按顺序进行的
     wait_for_command(
         [this]()
         {
             return command_msg_count_ >= subscribers_;
         });
 
-    // TEST FINISHED:
+    // 测试完成:
 
-    // Delete Data Sample
+    // 删除数据样本
     if (dynamic_types_)
     {
         DynamicDataFactory::get_instance()->delete_data(dynamic_data_in_);
@@ -902,21 +884,21 @@ bool LatencyTestPublisher::test(
         latency_data_type_.delete_data(latency_data_out_);
     }
 
-    // Free resources
+    // 释放资源
 
     if (dynamic_types_)
     {
         size_t removed = 0;
         data_writer_->clear_history(&removed);
     }
-    // Remove endpoints associated with the given payload size
+    // 删除与给定有效负载大小关联的终结点
     else if (!destroy_data_endpoints())
     {
-        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "Endpoints for payload size " << datasize << " could not been removed");
+        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "Endpoints for payload size " << datasize << " 不能被移除");
         return false;
     }
 
-    // Drop the first measurement, as it's usually not representative
+    // 删除第一个测量值，因为它通常不具有代表性
     times_.erase(times_.begin());
 
     // Log all data to CSV file if specified
@@ -933,10 +915,10 @@ bool LatencyTestPublisher::test(
 void LatencyTestPublisher::analyze_times(
         uint32_t datasize)
 {
-    // Collect statistics
+    // 收集统计信息
     TimeStats stats;
     stats.bytes_ = datasize;
-    stats.received_ = received_count_ - 1;  // Because we are not counting the first one.
+    stats.received_ = received_count_ - 1;  // 因为我们不计算第一个.
     stats.minimum_ = *min_element(times_.begin(), times_.end());
     stats.maximum_ = *max_element(times_.begin(), times_.end());
     stats.mean_ = accumulate(times_.begin(), times_.end(),
@@ -951,7 +933,7 @@ void LatencyTestPublisher::analyze_times(
     aux_stdev = sqrt(aux_stdev / times_.size());
     stats.stdev_ = aux_stdev;
 
-    /* Percentiles */
+    /* 百分位数 */
     sort(times_.begin(), times_.end());
 
     size_t elem = 0;
@@ -1033,16 +1015,14 @@ void LatencyTestPublisher::export_raw_data(
 
 int32_t LatencyTestPublisher::total_matches() const
 {
-    // no need to lock because is used always within a
-    // condition variable wait predicate
-
+    // 无需锁定，因为始终在条件变量等待谓词中使用
     int32_t count = data_writer_listener_.get_matches()
             + data_reader_listener_.get_matches()
             + command_writer_listener_.get_matches()
             + command_reader_listener_.get_matches();
 
-    // Each endpoint has a mirror counterpart in the LatencyTestPublisher
-    // thus, the maximun number of matches is 4 * total number of subscribers
+    // 每个端点在 LatencyTestPublisher 中都有一个镜像对应项
+    // 因此，最大匹配数为 4 * 订阅者总数
     assert(count >= 0 && count <= 4 * subscribers_);
     return count;
 }
@@ -1051,33 +1031,33 @@ bool LatencyTestPublisher::init_dynamic_types()
 {
     assert(participant_ != nullptr);
 
-    // Check if it has been initialized before
+    // 检查之前是否已经初始化过
     if (dynamic_pub_sub_type_)
     {
-        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "ERROR DYNAMIC DATA type already initialized");
+        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "错误: DYNAMIC DATA type 已经初始化过");
         return false;
     }
     else if (participant_->find_type(LatencyDataType::type_name_))
     {
-        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "ERROR DYNAMIC DATA type already registered");
+        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "错误: DYNAMIC DATA type 已经注册过");
         return false;
     }
 
-    // Dummy type registration
-    // Create basic builders
+    // 虚拟类型注册
+    // 创建基本构建器
     DynamicTypeBuilder_ptr struct_type_builder(DynamicTypeBuilderFactory::get_instance()->create_struct_builder());
 
-    // Add members to the struct.
+    // 向结构添加成员。
     struct_type_builder->add_member(0, "seqnum", DynamicTypeBuilderFactory::get_instance()->create_uint32_type());
     struct_type_builder->add_member(1, "data", DynamicTypeBuilderFactory::get_instance()->create_sequence_builder(
                 DynamicTypeBuilderFactory::get_instance()->create_byte_type(), BOUND_UNLIMITED));
     struct_type_builder->set_name(LatencyDataType::type_name_);
     dynamic_pub_sub_type_.reset(new DynamicPubSubType(struct_type_builder->build()));
 
-    // Register the data type
+    // 注册数据类型
     if (ReturnCode_t::RETCODE_OK != dynamic_pub_sub_type_.register_type(participant_))
     {
-        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "ERROR registering the DYNAMIC DATA type");
+        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "注册DYNAMIC DATA type时出错");
         return false;
     }
 
@@ -1089,27 +1069,27 @@ bool LatencyTestPublisher::init_static_types(
 {
     assert(participant_ != nullptr);
 
-    // Check if it has been initialized before
+    // 检查之前是否已经初始化过
     if (latency_data_type_)
     {
-        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "ERROR STATIC DATA type already initialized");
+        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "错误:STATIC DATA type 已经初始化过");
         return false;
     }
     else if (participant_->find_type(LatencyDataType::type_name_))
     {
-        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "ERROR STATIC DATA type already registered");
+        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "错误:STATIC DATA type已经注册过");
         return false;
     }
 
-    // calculate the padding for the desired demand
+    // 计算所需需求的填充
     ::size_t padding = payload - LatencyType::overhead;
     assert(padding > 0);
-    // Create the static type
+    // 创建静态类型
     latency_data_type_.reset(new LatencyDataType(padding));
-    // Register the static type
+    // 注册静态类型
     if (ReturnCode_t::RETCODE_OK != latency_data_type_.register_type(participant_))
     {
-        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "ERROR registering the STATIC DATA type");
+        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "注册 STATIC DATA type 时出错");
         return false;
     }
 
@@ -1120,29 +1100,29 @@ bool LatencyTestPublisher::create_data_endpoints()
 {
     if (nullptr != latency_data_pub_topic_ || nullptr != latency_data_sub_topic_)
     {
-        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "ERROR latency_data_pub_topic_ already initialized");
+        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "错误: latency_data_pub_topic_ 已经初始化过");
         return false;
     }
 
     if (nullptr != latency_data_sub_topic_)
     {
-        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "ERROR latency_data_sub_topic_ already initialized");
+        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "错误: latency_data_sub_topic_ 已经初始化过");
         return false;
     }
 
     if (nullptr != data_writer_)
     {
-        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "ERROR data_writer_ already initialized");
+        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "错误: data_writer_ 已经初始化过");
         return false;
     }
 
     if (nullptr != data_reader_)
     {
-        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "ERROR data_reader_ already initialized");
+        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "错误: data_reader_ 已经初始化过");
         return false;
     }
 
-    /* Create Data Topics */
+    /* 创建Topics */
     std::ostringstream topic_name;
     topic_name << "LatencyTest_";
     if (hostname_)
@@ -1158,7 +1138,7 @@ bool LatencyTestPublisher::create_data_endpoints()
 
     if (nullptr == latency_data_pub_topic_)
     {
-        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "ERROR creating latency_data_pub_topic_");
+        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "创建 latency_data_pub_topic_ 时出错");
         return false;
     }
 
@@ -1179,11 +1159,11 @@ bool LatencyTestPublisher::create_data_endpoints()
 
     if (latency_data_sub_topic_ == nullptr)
     {
-        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "ERROR creating latency_data_sub_topic_");
+        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "创建latency_data_sub_topic_时出错");
         return false;
     }
 
-    // Create DataWriter
+    // 创建DataWriter
     data_writer_ = publisher_->create_datawriter(
         latency_data_pub_topic_,
         dw_qos_,
@@ -1194,7 +1174,7 @@ bool LatencyTestPublisher::create_data_endpoints()
         return false;
     }
 
-    // Create Echo DataReader
+    // 创建 Echo DataReader
     data_reader_ = subscriber_->create_datareader(
         latency_data_sub_topic_,
         dr_qos_,
@@ -1214,11 +1194,11 @@ bool LatencyTestPublisher::destroy_data_endpoints()
     assert(nullptr != publisher_);
     assert(nullptr != subscriber_);
 
-    // Delete the endpoints
+    // 删除 endpoints
     if (nullptr == data_writer_
             || ReturnCode_t::RETCODE_OK != publisher_->delete_datawriter(data_writer_))
     {
-        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "ERROR destroying the DataWriter");
+        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "销毁 DataWriter 时出错");
         return false;
     }
     data_writer_ = nullptr;
@@ -1227,17 +1207,17 @@ bool LatencyTestPublisher::destroy_data_endpoints()
     if (nullptr == data_reader_
             || ReturnCode_t::RETCODE_OK != subscriber_->delete_datareader(data_reader_))
     {
-        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "ERROR destroying the DataReader");
+        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "销毁 DataReader 时出错");
         return false;
     }
     data_reader_ = nullptr;
     data_reader_listener_.reset();
 
-    // Delete the Topics
+    // 删除Topics
     if (nullptr == latency_data_pub_topic_
             || ReturnCode_t::RETCODE_OK != participant_->delete_topic(latency_data_pub_topic_))
     {
-        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "ERROR destroying the DATA PUB topic");
+        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "销毁 DATA PUB topic 时出错");
         return false;
     }
     latency_data_pub_topic_ = nullptr;
@@ -1245,15 +1225,15 @@ bool LatencyTestPublisher::destroy_data_endpoints()
     if (nullptr == latency_data_sub_topic_
             || ReturnCode_t::RETCODE_OK != participant_->delete_topic(latency_data_sub_topic_))
     {
-        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "ERROR destroying the DATA SUB topic");
+        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "销毁 DATA SUB topic 时出错");
         return false;
     }
     latency_data_sub_topic_ = nullptr;
 
-    // Delete the Type
+    // 删除 Type
     if (ReturnCode_t::RETCODE_OK != participant_->unregister_type(LatencyDataType::type_name_))
     {
-        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "ERROR unregistering the DATA type");
+        EPROSIMA_LOG_ERROR(LATENCYPUBLISHER, "注销 DATA type 时出错");
         return false;
     }
 
