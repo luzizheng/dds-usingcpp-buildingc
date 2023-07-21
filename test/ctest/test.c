@@ -30,10 +30,18 @@ void recvcallback(void *pdata, uint32_t datalen)
     free(str);
 }
 
+struct ThreadArg
+{
+    uint32_t samples;
+    double interval_u;
+    char topic[10];
+    char message[50];
+};
+
 // ‘send’ 操作
 void *runSendThread(void *arg)
 {
-    struct OptionsArgs *targs = (struct OptionsArgs *)arg;
+    struct ThreadArg *targs = (struct ThreadArg *)arg;
     if (targs == NULL)
     {
         printf("error:OptionsArgs is null\n");
@@ -42,27 +50,12 @@ void *runSendThread(void *arg)
     // const char *message = "abcdefg";
     // void *p = (void *)message;
     char *msg = malloc(strlen(targs->message) + 1);
-    strcpy(msg,targs->message);
+    strcpy(msg, targs->message);
 
     uint32_t remain_samples = targs->samples;
     while (1)
     {
-        // printf("remain samples = %d\n", remain_samples);
-
-        if (remain_samples < 1)
-        {
-            break;
-        }
-        remain_samples--;
-
-        usleep(targs->interval_u);
-
-        char topic_ch[10];
-        sprintf(topic_ch, "%d", targs->topic);
-        const char *topic_str = topic_ch;
-
-        // send data
-        DDS_MSGCODE code = dds_send(dds, topic_str, msg, strlen(msg), true);
+        DDS_MSGCODE code = dds_send(dds, targs->topic, msg, strlen(msg), true);
         if (code != DDS_MSG_SUCCESS)
         {
             break;
@@ -74,12 +67,8 @@ void *runSendThread(void *arg)
 
 void *listenThread(void *arg)
 {
-    struct OptionsArgs *targs = (struct OptionsArgs *)arg;
-    char topic_ch[10];
-    sprintf(topic_ch, "%d", targs->topic);
-    const char *topic_str = topic_ch;
-
-    if (dds_revcDataCallback(dds, topic_str, recvcallback) != 0)
+    struct ThreadArg *targs = (struct ThreadArg *)arg;
+    if (dds_revcDataCallback(dds, targs->topic, recvcallback) != 0)
     {
         return NULL;
     }
@@ -97,25 +86,16 @@ void *listenThread(void *arg)
 
 void *readThread(void *arg)
 {
-    struct OptionsArgs *targs = (struct OptionsArgs *)arg;
+    struct ThreadArg *targs = (struct ThreadArg *)arg;
     void *pdata;
     uint32_t dataLen = 0;
-    char topic_ch[10];
-    sprintf(topic_ch, "%d", targs->topic);
-    const char *topic_str = topic_ch;
-    if (dds_read(dds, topic_str, 5, &pdata, &dataLen) == DDS_MSG_SUCCESS)
+    if (dds_read(dds, targs->topic, 5, &pdata, &dataLen) == DDS_MSG_SUCCESS)
     {
-        // printf("pdata = %p\n",pdata);
-        // char *str = (char *)malloc(dataLen + 1);
-        // memcpy(str, pdata, dataLen);
-        // str[dataLen] = '\0';
-        // printf("接收到数据:%s\n", str);
-        // free(str);
         char *recvMsg = (char *)pdata;
         printf("接收到数据:");
         for (int i = 0; i < dataLen; i++)
         {
-            printf("%c",recvMsg[i]);
+            printf("%c", recvMsg[i]);
         }
         putchar('\n');
         free(recvMsg);
@@ -145,26 +125,35 @@ int main(int argc, char **argv)
     dds = dds_create(dds_qos_createDefaultQoS(), DDS_DEFAULT, NULL);
 
     // bind topic
-    char topic_ch[5];
-    snprintf(topic_ch, sizeof(topic_ch), "%d", oa.topic);
-    const char *topic_str = topic_ch;
-    dds_bindTopic(dds, topic_str);
+    for (int i = 0; i < oa.topic_count; i++)
+    {
+        dds_bindTopic(dds, oa.topics[i]);
+    }
 
     if (oa.operation == dsend)
     {
-        pthread_t tid;
+        // 遍历所有topic，启动相应数量的线程（1个topic 1条线程）
+        for (int i = 0; i < oa.topic_count; i++)
+        {
+            struct ThreadArg ta;
+            strcpy(ta.topic,oa.topics[i]);
+            strcpy(ta.message,oa.message);
+            ta.interval_u = oa.interval_u;
+            ta.samples = oa.samples;
+            pthread_t tid;
 #ifdef __cplusplus
-        int ret = pthread_create(&tid, NULL, runSendThread, (void *)&oa);
+            int ret = pthread_create(&tid, NULL, runSendThread, (void *)&ta);
 #else
-        int ret = pthread_create(&tid, NULL, (void *)runSendThread, (void *)&oa);
+            int ret = pthread_create(&tid, NULL, (void *)runSendThread, (void *)&ta);
 #endif
 
-        if (ret)
-        {
-            printf("创建send线程失败\n");
-            exit(-1);
+            if (ret)
+            {
+                printf("创建send线程失败\n");
+                exit(-1);
+            }
+            pthread_join(tid, NULL);
         }
-        pthread_join(tid, NULL);
     }
     else if (oa.operation == dlisten)
     {

@@ -769,8 +769,8 @@ void ThroughputSubscriber::run()
                       << (double)(command_sample.m_receivedsamples) * 1000000 /
                 command_sample.m_totaltime
                       << std::endl;
-            std::cout << "测试大小： " << command_sample.m_size << " 和需求 " << command_sample.m_demand <<
-                " ends." << std::endl;
+            std::cout << "测试数据包负载大小： " << command_sample.m_size << " bytes 和样本数量：" << command_sample.m_demand <<
+                " 个." << std::endl;
             command_writer_->write(&command_sample);
 
             std::cout << "-----------------------------------------------------------------------" << std::endl;

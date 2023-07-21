@@ -24,8 +24,9 @@ struct OptionsArgs
     enum ddsExampleOperation operation;
     uint32_t samples;
     double interval_u;
-    uint32_t topic;
-    char message[20];
+    char topics[10][10];
+    uint32_t topic_count;
+    char message[50];
 };
 
 

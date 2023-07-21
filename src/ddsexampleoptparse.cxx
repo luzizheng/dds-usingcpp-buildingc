@@ -122,8 +122,8 @@ const option::Descriptor usage[] = {
      "Usage: DDSExample <send|listen|both|read>\nsend:发送数据；\nlisten:阻塞线程监听并接收数据;\nboth:同一个进程内进行数据发送/接收(进程内交付);\nread:主动接收数据(非阻塞)\n\n可选:"},
     {UNKNOWN_OPT, 0, "", "", Arg::None, ""},
     {HELP, 0, "h", "help", Arg::None, "  -h \t--help  \t帮助信息."},
-    {TOPIC, 0, "t", "topic", Arg::NumericRange<>,
-     "  -t <num>, \t--topic=<num>  \tTopic ID (默认为0, infinite).\n发布参数(在send或both的情况下使用):"},
+    {TOPIC, 0, "t", "topic", Arg::String,
+     "  -t <string>, \t--topic=<string>  \tTopic ID (默认为0, 可以绑定多个topic.用逗号,相隔).\n发布参数(在send或both的情况下使用):"},
     {SAMPLES, 0, "s", "samples", Arg::Numeric, "-s <num>, \t--samples=<num> \t发送的样本数量(默认infinite)"},
     {INTERVAL, 0, "i", "interval", Arg::String, "-i <second>, \t--interval=<second> \t发送的间隔时间(单位:秒,默认1秒)"},
     {MESSAGE, 0, "m", "message", Arg::String, "-m <string>, \t--message=<string> \t发送的字符串信息"},
@@ -150,7 +150,6 @@ int parseMainOptions(struct OptionsArgs * const argst, int _argc, char **_argv)
 #endif // if defined(_WIN32)
 
     ddsExampleOperation opt = ddsExampleOperation::dsend;
-    uint32_t topic = 0;
     uint32_t samples = INT32_MAX;
     double interval_u = 1 * 1000 * 1000;
     char message[20] = "hello byd dds!";
@@ -211,7 +210,23 @@ int parseMainOptions(struct OptionsArgs * const argst, int _argc, char **_argv)
 
                 case TOPIC:
                 {
-                    topic = strtol(opt.arg,nullptr,10);
+                    char tmp[100];
+                    strcpy(tmp,opt.arg);
+                    char *token = strtok(tmp,",");
+                    int i = 0;
+                    while (token != NULL)
+                    {
+                        strcpy(argst->topics[i],token);
+                        i++;
+                        token = strtok(NULL,",");
+                    }
+                    argst->topic_count = i;
+                    if (i == 0)
+                    {
+                        strcpy(argst->topics[0],"TestTopic");
+                        argst->topic_count = 1;
+                    }
+
                     break;
                 }
                 case MESSAGE:
@@ -233,7 +248,7 @@ int parseMainOptions(struct OptionsArgs * const argst, int _argc, char **_argv)
         return 1;
     }
 
-    // printf("topic = %d\nsamples=%d\ninterval=%.2f秒\n",topic,samples,interval_u/1000000.0);
+    printf("topic = %s\n");
     
  
     if (argst == NULL)
@@ -243,14 +258,7 @@ int parseMainOptions(struct OptionsArgs * const argst, int _argc, char **_argv)
     }
     argst->operation = opt;
     argst->samples = samples;
-    argst->topic = topic;
     argst->interval_u = interval_u;
-    // if (strcmp(message,"") == 0)
-    // {
-    //     strcpy(argst->message,"hello byd dds!");
-    // }else{
-    //     strcpy(argst->message,message);
-    // }
     strcpy(argst->message,message);
     return 0;
 }

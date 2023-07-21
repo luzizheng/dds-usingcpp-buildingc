@@ -1,5 +1,5 @@
-# add_subdirectory(ctest)
-# add_subdirectory(configuration)
+add_subdirectory(ctest)
+add_subdirectory(configuration)
 # add_subdirectory(HelloWorld)
 # add_subdirectory(HelloWorldSHM)
 # add_subdirectory(latency)
