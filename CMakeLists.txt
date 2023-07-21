@@ -1,12 +1,7 @@
-
 cmake_minimum_required(VERSION 3.15)
-
-# 目标文件类型 APP LIB QOSTEST
-set(BTYPE QOSTEST)
 
 # 编译架构：x86 arm64
 set(ARCHITECTURE x86)
-
 
 if(${ARCHITECTURE} STREQUAL "arm64")
 message(STATUS "this is arm64 compiler")
@@ -24,58 +19,40 @@ endif()
 
 set(CMAKE_SYSTEM_NAME "Linux")
 
-
-# set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-if(${BTYPE} STREQUAL "APP")
-project(ddsexample VERSION 1 LANGUAGES C CXX)
-elseif(${BTYPE} STREQUAL "LIB")
 project(ddsc VERSION 1 LANGUAGES C CXX)
-elseif(${BTYPE} STREQUAL "QOSTEST")
-project(ddstest VERSION 1 LANGUAGES C CXX)
-endif()
-
 
 # dds头文件
-include_directories(${PROJECT_SOURCE_DIR}/third_include)
-include_directories(${PROJECT_SOURCE_DIR}/include)
 
+set(FASTDDS_HEAD ${PROJECT_SOURCE_DIR}/fastdds_include)
+set(DDS_HEAD ${PROJECT_SOURCE_DIR}/include)
 
+include_directories(${FASTDDS_HEAD})
+include_directories(${DDS_HEAD})
 
 file(GLOB_RECURSE SRC_C "${PROJECT_SOURCE_DIR}/src/*.c")
 file(GLOB_RECURSE SRC_CPP "${PROJECT_SOURCE_DIR}/src/*.cpp")
 file(GLOB_RECURSE SRC_CXX "${PROJECT_SOURCE_DIR}/src/*.cxx")
 
-if(${BTYPE} STREQUAL "QOSTEST")
-include_directories(${PROJECT_SOURCE_DIR}/dds_test)
-file(GLOB_RECURSE TEST_CXX "${PROJECT_SOURCE_DIR}/dds_test/*.cxx")
-file(GLOB_RECURSE TEST_CPP "${PROJECT_SOURCE_DIR}/dds_test/*.cpp")
-endif()
+# 库生成的路径
+set(LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/build/lib)
 
+# 测试程序生成路径
+set(EXEC_PATH ${CMAKE_CURRENT_SOURCE_DIR}/build/bin)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/build/lib)
 
 
 #lib 文件
 if(${ARCHITECTURE} STREQUAL "arm64")
-# link_directories(${PROJECT_SOURCE_DIR}/lib_arm64)
+set(LIBDDS ${PROJECT_SOURCE_DIR}/lib_arm64/libdds.so)
+set(LIBCRYPTO ${PROJECT_SOURCE_DIR}/lib_arm64/libcrypto.so.3)
+set(LIBSSL ${PROJECT_SOURCE_DIR}/lib_arm64/libssl.so.3)
 else()
-# link_directories(${PROJECT_SOURCE_DIR}/lib_x86)
 set(LIBDDS ${PROJECT_SOURCE_DIR}/lib_x86/libdds.so)
 set(LIBCRYPTO ${PROJECT_SOURCE_DIR}/lib_x86/libcrypto.so.3)
 set(LIBSSL ${PROJECT_SOURCE_DIR}/lib_x86/libssl.so.3)
 endif()
 
-
-
-if(${BTYPE} STREQUAL "APP")
-add_executable(${PROJECT_NAME} ${SRC_C} ${SRC_CXX} ${SRC_CPP})
-elseif(${BTYPE} STREQUAL "LIB")
 add_library(${PROJECT_NAME} SHARED ${SRC_C} ${SRC_CXX} ${SRC_CPP})
-elseif(${BTYPE} STREQUAL "QOSTEST")
-add_executable(${PROJECT_NAME} ${SRC_CXX} ${SRC_CPP} ${TEST_CXX} ${TEST_CPP})
-endif()
-
-
-
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     $<$<AND:$<NOT:$<BOOL:${WIN32}>>,$<STREQUAL:"${CMAKE_BUILD_TYPE}","Debug">>:__DEBUG>
@@ -83,3 +60,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 )
 
 target_link_libraries(${PROJECT_NAME} ${LIBDDS} ${LIBCRYPTO} ${LIBSSL} pthread -lrt -ldl)
+
+
+
+# 添加子目录
+add_subdirectory(test)
