@@ -17,7 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "BlackboxTests.hpp"
-#include "PubSubReader.hpp"
+#include "../api/dds-pim/PubSubReader.hpp"
 
 #include <fastdds/dds/domain/DomainParticipant.hpp>
 #include <fastdds/dds/domain/DomainParticipantFactory.hpp>

@@ -58,8 +58,8 @@
 #include "../types/statistics/types.h"
 #include "../types/statistics/typesPubSubTypes.h"
 #include "BlackboxTests.hpp"
-#include "PubSubReader.hpp"
-#include "PubSubWriter.hpp"
+#include "../api/dds-pim/PubSubReader.hpp"
+#include "../api/dds-pim/PubSubWriter.hpp"
 
 #ifdef FASTDDS_STATISTICS
 

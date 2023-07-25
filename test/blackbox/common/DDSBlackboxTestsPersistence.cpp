@@ -14,8 +14,8 @@
 
 #include "BlackboxTests.hpp"
 
-#include "PubSubReader.hpp"
-#include "PubSubWriter.hpp"
+#include "../api/dds-pim/PubSubReader.hpp"
+#include "../api/dds-pim/PubSubWriter.hpp"
 #include "ReqRepAsReliableHelloWorldRequester.hpp"
 #include "ReqRepAsReliableHelloWorldReplier.hpp"
 #include <fastrtps/xmlparser/XMLProfileManager.h>

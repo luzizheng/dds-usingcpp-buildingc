@@ -16,8 +16,8 @@
 
 #if HAVE_SQLITE3
 
-#include "PubSubReader.hpp"
-#include "PubSubWriter.hpp"
+#include "../api/dds-pim/PubSubReader.hpp"
+#include "../api/dds-pim/PubSubWriter.hpp"
 
 #include <cstring>
 #include <fstream>

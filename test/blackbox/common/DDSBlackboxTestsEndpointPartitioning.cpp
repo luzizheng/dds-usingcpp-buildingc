@@ -1,29 +1,15 @@
-// Copyright 2021 Proyectos y Sistemas de Mantenimiento SL (eProsima).
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 #include <gtest/gtest.h>
 
 #include "BlackboxTests.hpp"
-#include "PubSubReader.hpp"
-#include "PubSubWriter.hpp"
+#include "../api/dds-pim/PubSubReader.hpp"
+#include "../api/dds-pim/PubSubWriter.hpp"
 
 using namespace eprosima::fastrtps;
 
 /**
- * This test checks that DataWriter/DataReaders match with each other one to one when the partition
- * configuration set on their profile matches. It also tests that this configuration is compatible with
- * Publisher/Subscriber partition configuration.
+ * 此测试检查当配置文件上设置的分区配置匹配时，
+ * DataWriter/DataReader 是否一对一匹配。
+ * 它还测试此配置是否与发布器/订阅器分区配置兼容。
  */
 TEST(EndpointPartitioning, SinglePartition)
 {
