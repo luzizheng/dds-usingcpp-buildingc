@@ -1,5 +1,3 @@
-
-
 #ifndef _FASTRTPS_CONFIG_H_
 #define _FASTRTPS_CONFIG_H_
 

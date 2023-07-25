@@ -248,7 +248,6 @@ int parseMainOptions(struct OptionsArgs * const argst, int _argc, char **_argv)
         return 1;
     }
 
-    printf("topic = %s\n");
     
  
     if (argst == NULL)

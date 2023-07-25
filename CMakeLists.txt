@@ -43,13 +43,25 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/build/lib)
 
 #lib 文件
 if(${ARCHITECTURE} STREQUAL "arm64")
+# 必须库
 set(LIBDDS ${PROJECT_SOURCE_DIR}/lib_arm64/libdds.so)
 set(LIBCRYPTO ${PROJECT_SOURCE_DIR}/lib_arm64/libcrypto.so.3)
 set(LIBSSL ${PROJECT_SOURCE_DIR}/lib_arm64/libssl.so.3)
+#Gtest
+set(LIBGMOCK ${PROJECT_SOURCE_DIR}/lib_arm64/libgmock.a)
+set(LIBGMOCKMAIN ${PROJECT_SOURCE_DIR}/lib_arm64/libgmockmain.a)
+set(LIBGTEST ${PROJECT_SOURCE_DIR}/lib_arm64/libgtest.a)
+set(LIBGTESTMAIN ${PROJECT_SOURCE_DIR}/lib_arm64/libgtestmain.a)
 else()
+# 必须库
 set(LIBDDS ${PROJECT_SOURCE_DIR}/lib_x86/libdds.so)
 set(LIBCRYPTO ${PROJECT_SOURCE_DIR}/lib_x86/libcrypto.so.3)
 set(LIBSSL ${PROJECT_SOURCE_DIR}/lib_x86/libssl.so.3)
+#Gtest
+set(LIBGMOCK ${PROJECT_SOURCE_DIR}/lib_x86/libgmock.a)
+set(LIBGMOCKMAIN ${PROJECT_SOURCE_DIR}/lib_x86/libgmockmain.a)
+set(LIBGTEST ${PROJECT_SOURCE_DIR}/lib_x86/libgtest.a)
+set(LIBGTESTMAIN ${PROJECT_SOURCE_DIR}/lib_x86/libgtestmain.a)
 endif()
 
 add_library(${PROJECT_NAME} SHARED ${SRC_C} ${SRC_CXX} ${SRC_CPP})

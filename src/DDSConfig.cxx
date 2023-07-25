@@ -47,9 +47,6 @@ DDSConfig::DDSConfig()
         XMLElement *sleepEle = testconfEle->FirstChildElement("sleep");
         const char *sleepCh = sleepEle->GetText();
         m_sleep = atoi(sleepCh);
-
-        
-
         cout << "config.xml加载成功" << endl;
 
     }
