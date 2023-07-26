@@ -110,7 +110,7 @@ void *readThread(void *arg)
 int main(int argc, char **argv)
 {
 
-    struct OptionsArgs oa = {dundefault, INT32_MAX, 1, 0};
+    struct OptionsArgs oa = {dundefault, INT32_MAX, 1000000, {}, 1, "hello dds"};
     int res = parseMainOptions(&oa, argc, argv);
     if (res != 0)
     {
@@ -125,8 +125,11 @@ int main(int argc, char **argv)
     dds = dds_create(dds_qos_createDefaultQoS(), DDS_DEFAULT, NULL);
 
     // bind topic
+
+    printf("topic count = %d\n", oa.topic_count);
     for (int i = 0; i < oa.topic_count; i++)
     {
+        printf("bind topic : %s\n", oa.topics[i]);
         dds_bindTopic(dds, oa.topics[i]);
     }
 
@@ -136,8 +139,8 @@ int main(int argc, char **argv)
         for (int i = 0; i < oa.topic_count; i++)
         {
             struct ThreadArg ta;
-            strcpy(ta.topic,oa.topics[i]);
-            strcpy(ta.message,oa.message);
+            strcpy(ta.topic, oa.topics[i]);
+            strcpy(ta.message, oa.message);
             ta.interval_u = oa.interval_u;
             ta.samples = oa.samples;
             pthread_t tid;
@@ -157,50 +160,76 @@ int main(int argc, char **argv)
     }
     else if (oa.operation == dlisten)
     {
-        pthread_t tid;
+
+        for (int i = 0; i < oa.topic_count; i++)
+        {
+            struct ThreadArg ta;
+            strcpy(ta.topic, oa.topics[i]);
+            strcpy(ta.message, oa.message);
+            ta.interval_u = oa.interval_u;
+            ta.samples = oa.samples;
+            pthread_t tid;
 
 #ifdef __cplusplus
-        int ret = pthread_create(&tid, NULL, listenThread, (void *)&oa);
+            int ret = pthread_create(&tid, NULL, listenThread, (void *)&ta);
 #else
-        int ret = pthread_create(&tid, NULL, (void *)listenThread, (void *)&oa);
+            int ret = pthread_create(&tid, NULL, (void *)listenThread, (void *)&ta);
 #endif
 
-        if (ret)
-        {
-            printf("创建listen线程失败\n");
-            exit(-1);
+            if (ret)
+            {
+                printf("创建listen线程失败\n");
+                exit(-1);
+            }
+            pthread_join(tid, NULL);
         }
-        pthread_join(tid, NULL);
     }
     else if (oa.operation == dread)
     {
-        pthread_t tid;
+        for (int i = 0; i < oa.topic_count; i++)
+        {
+            struct ThreadArg ta;
+            strcpy(ta.topic, oa.topics[i]);
+            strcpy(ta.message, oa.message);
+            ta.interval_u = oa.interval_u;
+            ta.samples = oa.samples;
+            pthread_t tid;
 #ifdef __cplusplus
-        int ret = pthread_create(&tid, NULL, readThread, (void *)&oa);
+            int ret = pthread_create(&tid, NULL, readThread, (void *)&ta);
 #else
-        int ret = pthread_create(&tid, NULL, (void *)readThread, (void *)&oa);
+            int ret = pthread_create(&tid, NULL, (void *)readThread, (void *)&ta);
 #endif
 
-        if (ret)
-        {
-            printf("创建read线程失败\n");
-            exit(-1);
+            if (ret)
+            {
+                printf("创建read线程失败\n");
+                exit(-1);
+            }
+            pthread_join(tid, NULL);
         }
-        pthread_join(tid, NULL);
     }
     else if (oa.operation == dboth)
     {
-        pthread_t sendtid;
-        pthread_t listentid;
+        for (int i = 0; i < oa.topic_count; i++)
+        {
+            struct ThreadArg ta;
+            strcpy(ta.topic, oa.topics[i]);
+            strcpy(ta.message, oa.message);
+            ta.interval_u = oa.interval_u;
+            ta.samples = oa.samples;
+
+            pthread_t sendtid;
+            pthread_t listentid;
 #ifdef __cplusplus
-        pthread_create(&sendtid, NULL, runSendThread, (void *)&oa);
-        pthread_create(&listentid, NULL, listenThread, (void *)&oa);
+            pthread_create(&sendtid, NULL, runSendThread, (void *)&ta);
+            pthread_create(&listentid, NULL, listenThread, (void *)&ta);
 #else
-        pthread_create(&sendtid, NULL, (void *)runSendThread, (void *)&oa);
-        pthread_create(&listentid, NULL, (void *)listenThread, (void *)&oa);
+            pthread_create(&sendtid, NULL, (void *)runSendThread, (void *)&ta);
+            pthread_create(&listentid, NULL, (void *)listenThread, (void *)&ta);
 #endif
-        pthread_join(sendtid, NULL);
-        pthread_join(listentid, NULL);
+            pthread_join(sendtid, NULL);
+            pthread_join(listentid, NULL);
+        }
     }
     else
     {

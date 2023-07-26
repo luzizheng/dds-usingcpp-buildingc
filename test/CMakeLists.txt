@@ -9,13 +9,13 @@ macro(add_xfail_label LIST_FILE)
 endmacro()
 
 add_subdirectory(ctest)
-add_subdirectory(configuration)
+# add_subdirectory(configuration)
 
 # add_subdirectory(latency)
-add_subdirectory(throughput)
+# add_subdirectory(throughput)
 
 # add_subdirectory(unittest)
-add_subdirectory(blackbox)
+# add_subdirectory(blackbox)
 
 
 

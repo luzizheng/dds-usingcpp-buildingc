@@ -129,7 +129,7 @@ const option::Descriptor usage[] = {
     {MESSAGE, 0, "m", "message", Arg::String, "-m <string>, \t--message=<string> \t发送的字符串信息"},
     {0, 0, 0, 0, 0, 0}};
 
-int parseMainOptions(struct OptionsArgs * const argst, int _argc, char **_argv)
+int parseMainOptions(struct OptionsArgs *const argst, int _argc, char **_argv)
 {
     int columns;
 
@@ -153,28 +153,38 @@ int parseMainOptions(struct OptionsArgs * const argst, int _argc, char **_argv)
     uint32_t samples = INT32_MAX;
     double interval_u = 1 * 1000 * 1000;
     char message[20] = "hello byd dds!";
+    
+    strcpy(argst->topics[0], "TestTopic");
+    argst->topic_count = 1;
+
     if (_argc > 1)
     {
         if (strcmp(_argv[1], "send") == 0)
         {
             opt = ddsExampleOperation::dsend;
-        }else if (strcmp(_argv[1], "listen") == 0)
+        }
+        else if (strcmp(_argv[1], "listen") == 0)
         {
             opt = ddsExampleOperation::dlisten;
-        }else if (strcmp(_argv[1], "read") == 0)
+        }
+        else if (strcmp(_argv[1], "read") == 0)
         {
             opt = ddsExampleOperation::dread;
-        }else if (strcmp(_argv[1], "both") == 0)
+        }
+        else if (strcmp(_argv[1], "both") == 0)
         {
             opt = ddsExampleOperation::dboth;
-        }else{
+        }
+        else
+        {
             opt = ddsExampleOperation::dundefault;
             eprosima::option::printUsage(fwrite, stdout, usage, columns);
             return 1;
         }
         _argc -= (_argc > 0);
         _argv += (_argc > 0); // skip program name argv[0] if present
-        --_argc; ++_argv; // skip pub/sub argument
+        --_argc;
+        ++_argv; // skip pub/sub argument
         eprosima::option::Stats stats(usage, _argc, _argv);
         std::vector<eprosima::option::Option> options(stats.options_max);
         std::vector<eprosima::option::Option> buffer(stats.buffer_max);
@@ -193,71 +203,70 @@ int parseMainOptions(struct OptionsArgs * const argst, int _argc, char **_argv)
 
         for (int i = 0; i < parse.optionsCount(); ++i)
         {
-            eprosima::option::Option& opt = buffer[i];
+            eprosima::option::Option &opt = buffer[i];
             switch (opt.index())
             {
-                case HELP:
-                    // not possible, because handled further above and exits the program
-                    break;
+            case HELP:
+                // not possible, because handled further above and exits the program
+                break;
 
-                case SAMPLES:
-                    samples = strtol(opt.arg, nullptr, 10);
-                    break;
+            case SAMPLES:
+                samples = strtol(opt.arg, nullptr, 10);
+                break;
 
-                case INTERVAL:
-                    interval_u = strtod(opt.arg, nullptr) * 1000000;
-                    break;
+            case INTERVAL:
+                interval_u = strtod(opt.arg, nullptr) * 1000000;
+                break;
 
-                case TOPIC:
+            case TOPIC:
+            {
+                char tmp[100];
+                strcpy(tmp, opt.arg);
+                char *token = strtok(tmp, ",");
+                int i = 0;
+                while (token != NULL)
                 {
-                    char tmp[100];
-                    strcpy(tmp,opt.arg);
-                    char *token = strtok(tmp,",");
-                    int i = 0;
-                    while (token != NULL)
-                    {
-                        strcpy(argst->topics[i],token);
-                        i++;
-                        token = strtok(NULL,",");
-                    }
-                    argst->topic_count = i;
-                    if (i == 0)
-                    {
-                        strcpy(argst->topics[0],"TestTopic");
-                        argst->topic_count = 1;
-                    }
-
-                    break;
+                    strcpy(argst->topics[i], token);
+                    i++;
+                    token = strtok(NULL, ",");
                 }
-                case MESSAGE:
+                argst->topic_count = i;
+                if (i == 0)
                 {
-
-                    strcpy(message,opt.arg);
-                    break;
+                    strcpy(argst->topics[0], "TestTopic");
+                    argst->topic_count = 1;
                 }
 
-                case UNKNOWN_OPT:
-                    option::printUsage(fwrite, stdout, usage, columns);
-                    return 1;
-                    break;
+                break;
+            }
+            case MESSAGE:
+            {
+
+                strcpy(message, opt.arg);
+                break;
+            }
+
+            case UNKNOWN_OPT:
+                option::printUsage(fwrite, stdout, usage, columns);
+                return 1;
+                break;
             }
         }
-
-    }else {
+    }
+    else
+    {
         option::printUsage(fwrite, stdout, usage, columns);
         return 1;
     }
 
-    
- 
     if (argst == NULL)
     {
-        printf("struct OptionsArgs is NULL\n"); 
+        printf("struct OptionsArgs is NULL\n");
         return 1;
     }
     argst->operation = opt;
     argst->samples = samples;
     argst->interval_u = interval_u;
-    strcpy(argst->message,message);
+    strcpy(argst->message, message);
     return 0;
 }

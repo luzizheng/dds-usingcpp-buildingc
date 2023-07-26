@@ -71,7 +71,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     $<$<BOOL:${INTERNAL_DEBUG}>:__INTERNALDEBUG> # Internal debug activated.
 )
 
-target_link_libraries(${PROJECT_NAME} ${LIBDDS} ${LIBCRYPTO} ${LIBSSL} pthread -lrt -ldl)
+target_link_libraries(${PROJECT_NAME} ${LIBDDS} ${LIBCRYPTO} ${LIBSSL} pthread -lcrypto -lrt -ldl)
 
 
 
