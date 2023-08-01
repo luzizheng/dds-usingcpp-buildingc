@@ -45,7 +45,7 @@ public:
 
     /// @brief 添加新的topic
     /// @param __topicN topic名称
-    DDS_CODE pushTopic(string __topicN);
+    DDS_CODE pushTopic(string __topicN, c_qos *qos__);
 
     DDS_CODE deleteTopic(string __topicN);
 

@@ -41,8 +41,116 @@ CSTopic::~CSTopic()
     cout << "CSTopic:" + m_topicName + " 释放" << endl;
 }
 
-DDS_CODE CSTopic::init(DDSNode *__ddsNode, string __topicN)
+// 配置 datawriter 和 datareader 的 qos
+DDS_CODE CSTopic::configDataWriterReaderQoS(DataWriterQos *wqos, DataReaderQos *rqos, c_qos *qos_)
 {
+    if (wqos != NULL)
+    {
+        if (qos_->data_sharing->mode == qos_datasharing::AUTO)
+        {
+            wqos->data_sharing().automatic();
+        }
+        else if (qos_->data_sharing->mode == qos_datasharing::ON)
+        {
+            wqos->data_sharing().on(qos_->data_sharing->shared_dir);
+        }else if (qos_->data_sharing->mode == qos_datasharing::OFF)
+        {
+            wqos->data_sharing().off();
+        }
+
+        if (qos_->reliable->dw_mode == besteffort)
+        {
+            wqos->reliability().kind = BEST_EFFORT_RELIABILITY_QOS;
+        }
+        else if (qos_->reliable->dw_mode == reliable)
+        {
+            wqos->reliability().kind = RELIABLE_RELIABILITY_QOS;
+        }
+
+        if (qos_->history->kind == keep_last_history)
+        {
+            wqos->history().kind = KEEP_LAST_HISTORY_QOS;
+        }
+        else if (qos_->history->kind == keep_all_history)
+        {
+            wqos->history().kind = KEEP_ALL_HISTORY_QOS;
+        }
+        wqos->history().depth = qos_->history->depth;
+    
+        if (qos_->durability->dw_kind == volatitle_durability)
+        {
+            wqos->durability().kind = VOLATILE_DURABILITY_QOS;
+        }else if (qos_->durability->dw_kind == transient_local_durability)
+        {
+            wqos->durability().kind = TRANSIENT_LOCAL_DURABILITY_QOS;
+        }else if (qos_->durability->dw_kind == transient_durability)
+        {
+            wqos->durability().kind = TRANSIENT_DURABILITY_QOS;
+        }else if (qos_->durability->dw_kind == persistent_durability)
+        {
+            wqos->durability().kind = PERSISTENT_DURABILITY_QOS;
+        }
+
+        wqos->reliable_writer_qos().disable_positive_acks.enabled = qos_->reliable_writer->disable_positive_acks->enable;
+        wqos->reliable_writer_qos().disable_positive_acks.duration = qos_->reliable_writer->disable_positive_acks->keep_duration_ms/0.001;
+
+    }
+
+    if (rqos != NULL)
+    {
+        if (qos_->data_sharing->mode == qos_datasharing::AUTO)
+        {
+            wqos->data_sharing().automatic();
+        }
+        else if (qos_->data_sharing->mode == qos_datasharing::ON)
+        {
+            wqos->data_sharing().on(qos_->data_sharing->shared_dir);
+        }else if (qos_->data_sharing->mode == qos_datasharing::OFF)
+        {
+            wqos->data_sharing().off();
+        }
+
+        if (qos_->reliable->dr_mode == besteffort)
+        {
+            rqos->reliability().kind = BEST_EFFORT_RELIABILITY_QOS;
+        }
+        else if (qos_->reliable->dr_mode == reliable)
+        {
+            rqos->reliability().kind = RELIABLE_RELIABILITY_QOS;
+        }
+
+        if (qos_->history->kind == keep_last_history)
+        {
+            rqos->history().kind = KEEP_LAST_HISTORY_QOS;
+        }
+        else if (qos_->history->kind == keep_all_history)
+        {
+            rqos->history().kind = KEEP_ALL_HISTORY_QOS;
+        }
+        rqos->history().depth = qos_->history->depth;
+
+        if (qos_->durability->dr_kind == volatitle_durability)
+        {
+            rqos->durability().kind = VOLATILE_DURABILITY_QOS;
+        }else if (qos_->durability->dr_kind == transient_local_durability)
+        {
+            rqos->durability().kind = TRANSIENT_LOCAL_DURABILITY_QOS;
+        }else if (qos_->durability->dr_kind == transient_durability)
+        {
+            rqos->durability().kind = TRANSIENT_DURABILITY_QOS;
+        }else if (qos_->durability->dr_kind == persistent_durability)
+        {
+            rqos->durability().kind = PERSISTENT_DURABILITY_QOS;
+        }
+        
+    }
+
+    return DDS_MSG_SUCCESS;
+}
+
+DDS_CODE CSTopic::init(DDSNode *__ddsNode, string __topicN, c_qos *qos_)
+{
+    m_qos = qos_;
     m_topicName = __topicN;
     m_node = __ddsNode;
 
@@ -82,40 +190,8 @@ DDS_CODE CSTopic::init(DDSNode *__ddsNode, string __topicN)
 
     // 创建writer
     DataWriterQos wqos;
-
-    // bool dataSharing = m_node->m_config->m_useDataSharing;
-    // bool dataSharing = false;
-    if (m_node->qos_config.qos_data_sharing->mode == qos_datasharing::ON)
-    {
-        wqos.reliability().kind = BEST_EFFORT_RELIABILITY_QOS;
-        wqos.history().depth = 10;
-        wqos.data_sharing().automatic();
-    }
-    else
-    {
-        wqos.history().kind = KEEP_LAST_HISTORY_QOS;
-        wqos.history().depth = 10;
-        wqos.resource_limits().max_samples = 50;
-        wqos.resource_limits().allocated_samples = 50;
-        wqos.reliability().kind = RELIABLE_RELIABILITY_QOS;
-    }
-
-    if (m_node->qos_config.transfer->mode == qos_trans_protocol::TCPv4)
-    {
-        wqos.reliable_writer_qos().times.heartbeatPeriod.seconds = 2;
-        wqos.reliable_writer_qos().times.heartbeatPeriod.nanosec = 200 * 1000 * 1000;
-    }
-
-    bool disable_positive_acks = m_node->qos_config.disable_positive_acks->enable;
-    wqos.reliable_writer_qos().disable_positive_acks.enabled = disable_positive_acks;
-    if (disable_positive_acks)
-    {
-        uint64_t keep_duration_ms = m_node->qos_config.disable_positive_acks->keep_duration_ms;
-        wqos.reliable_writer_qos().disable_positive_acks.duration = eprosima::fastrtps::Duration_t(keep_duration_ms * 1e-3);
-    }
-
+    configDataWriterReaderQoS(&wqos,NULL,qos_);
     m_datawriter = m_node->m_publisher->create_datawriter(m_topic_pub, wqos, &m_dw_listener);
-
     if (m_datawriter == nullptr)
     {
         cerr << "初始化CSTopic失败:datawriter创建失败";
@@ -124,24 +200,7 @@ DDS_CODE CSTopic::init(DDSNode *__ddsNode, string __topicN)
 
     // 创建 reader
     DataReaderQos rqos;
-
-    if (m_node->qos_config.qos_data_sharing->mode == qos_datasharing::ON)
-    {
-        // date sharing
-        rqos.reliability().kind = BEST_EFFORT_RELIABILITY_QOS;
-        rqos.durability().kind = VOLATILE_DURABILITY_QOS;
-        rqos.data_sharing().automatic();
-    }
-    else
-    {
-        rqos.resource_limits().max_samples = 100;
-        rqos.resource_limits().allocated_samples = 100;
-        rqos.history().kind = KEEP_LAST_HISTORY_QOS;
-        rqos.history().depth = 100;
-    }
-
-    rqos.reliable_reader_qos().disable_positive_ACKs.enabled = disable_positive_acks;
-
+    configDataWriterReaderQoS(NULL,&rqos,qos_);
     m_datareader = m_node->m_subscriber->create_datareader(m_topic_sub, rqos, &m_dr_listener);
 
     if (m_datareader == nullptr)
@@ -232,7 +291,7 @@ void CSTopic::DRListener::on_subscription_matched(DataReader *reader, const Subs
 void CSTopic::DRListener::on_data_available(
     DataReader *reader)
 {
-    
+
     if (listener_enable == false)
     {
         return;

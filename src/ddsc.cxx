@@ -84,8 +84,9 @@ DDS_MSGCODE dds_setQos(const dds_fd fd_, c_qos *qos_)
 /// @brief 绑定topic
 /// @param fd_ dds描述符
 /// @param topicN topic名称
+/// @param qos_ qos配置
 /// @return 成功返回0
-DDS_MSGCODE dds_bindTopic(const dds_fd fd_, const char *topicN)
+DDS_MSGCODE dds_bindTopic(const dds_fd fd_, const char *topicN, c_qos *qos_)
 {
     DDSNode *node = node_list[fd_];
     if (node == nullptr)
@@ -98,7 +99,7 @@ DDS_MSGCODE dds_bindTopic(const dds_fd fd_, const char *topicN)
         printf("topic name is null");
         return DDS_MSG_TOPICNAMEERR;
     }
-    return node->pushTopic(topicN);
+    return node->pushTopic(topicN,qos_);
 }
 
 /// @brief 注销绑定topic

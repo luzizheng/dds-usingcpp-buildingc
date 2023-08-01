@@ -152,7 +152,7 @@ DDS_CODE DDSNode::init(const NODE_KIND &__kind, c_qos &qos_, string __name)
 
 /// @brief 添加新的topic
 /// @param __topicN topic名称
-DDS_CODE DDSNode::pushTopic(string __topicN)
+DDS_CODE DDSNode::pushTopic(string __topicN, c_qos * qos_)
 {
     bool flag = false;
     for (int i = 0; i < m_topic_li.size(); i++)
@@ -174,7 +174,7 @@ DDS_CODE DDSNode::pushTopic(string __topicN)
     }
     CSTopic *topic = new CSTopic();
 
-    uint16_t result = topic->init(this, __topicN);
+    uint16_t result = topic->init(this, __topicN,qos_);
     // topic->startListen();
     if (result != 0)
     {

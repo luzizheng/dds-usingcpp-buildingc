@@ -14,6 +14,7 @@
 #include "DDSNodeConst.h"
 #include <string>
 #include <mutex>
+#include "ddsqos.h"
 
 using namespace std;
 using namespace eprosima::fastdds::dds;
@@ -31,13 +32,15 @@ private:
     void sendDataThread__(TestingData *data__,int16_t waitTilConnect__);
     std::mutex sendDataThread_mtx;
     dds_recvcallback m_callback;
+    DDS_CODE configDataWriterReaderQoS(DataWriterQos *dwqos,DataReaderQos *drqos,c_qos * qos_);
+
 public:
     string m_topicName;
     DataWriter *m_datawriter;
     DataReader *m_datareader;
     Topic *m_topic_pub;
     Topic *m_topic_sub;
-    
+    c_qos *m_qos;
 
     CSTopic();
     ~CSTopic();
@@ -45,7 +48,7 @@ public:
     /// @brief 初始化
     /// @param ddsNode 跟随的dds节点
     /// @param topicName topic名称
-    DDS_CODE init(DDSNode *__ddsNode, string __topicN);
+    DDS_CODE init(DDSNode *__ddsNode, string __topicN, c_qos * qos_);
 
     /// @brief 往topic写数据
     /// @param __data 数据指针

@@ -10,11 +10,13 @@ extern "C"
 {
 #endif
     /// @brief 初始化dds
-    /// @param qos_ qos配置(使用默认的话传NULL)
+    /// @param qos_ qos配置(主要是DomainParticipant的配置，使用默认的话传NULL)
     /// @param side_ 节点类型
     /// @param name_ 名称
     /// @return 返回dds描述符
     dds_fd dds_create(c_qos *qos_, DDS_SIDE side_, const char *name_);
+
+    dds_fd dds_create(DDS_SIDE side_, const char *_xml);
 
     /// @brief 关闭dds
     /// @param fd_ dds描述符
@@ -30,8 +32,9 @@ extern "C"
     /// @brief 绑定topic
     /// @param fd_ dds描述符
     /// @param topicN topic名称
+    /// @param qos_ qos配置(包括Topic Pub Sub DW DR的配置 使用默认的话传NULL)
     /// @return 成功返回0
-    DDS_MSGCODE dds_bindTopic(const dds_fd fd_, const char *topicN);
+    DDS_MSGCODE dds_bindTopic(const dds_fd fd_, const char *topicN, c_qos *qos_);
 
     /// @brief 注销绑定topic
     /// @param fd_
