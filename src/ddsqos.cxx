@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <iostream>
-#include "tinyxml2.h"
+#include "tinyxml2/tinyxml2.h"
 
 using namespace tinyxml2;
 using namespace std;

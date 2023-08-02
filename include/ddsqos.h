@@ -69,9 +69,14 @@ extern "C"
          * 如果选择此选项，则深度将没有任何影响，
          * 因此历史记录仅受 resourceLimits 中设置的值的限制。
          * 如果达到限制，系统的行为取决于可靠性 reliable，
+         * 如果其类型 besteffort 则旧值将被丢弃，服务将尝试保留实例的所有值，直到可以将其传递给所有现有Subscriber。
+         * 如果选择此选项，则深度将没有任何影响，
+         * 因此历史记录仅受 resourceLimits 中设置的值的限制。
+         * 如果达到限制，系统的行为取决于可靠性 reliable，
          * 如果其类型 besteffort 则旧值将被丢弃，
          * 但如果它是可靠的，则服务会阻止DataWriter，直到旧值传递给所有现有订阅者。
-         * */
+         * 但如果它是可靠的,则服务会阻止DataWriter,直到旧值传递给所有现有订阅者.
+         */
         keep_all_history
     };
 
@@ -83,6 +88,35 @@ extern "C"
         transient_durability,       // 当新的 DataReader 加入时，其历史记录中会填充过去的样本，这些示样本储在持久存储上
         persistent_durability       // 所有样本都存储在永久存储中，以便它们可以在系统会话之后存活
     };
+
+    enum qos_liveliness_kind
+    {
+        automatic_liveliness,
+        manual_by_participant_liveliness,
+        manual_by_topic_liveliness
+    };
+
+    typedef struct qos_deadline_
+    {
+        float topic_period_ms;
+        float dw_period_ms;
+        float dr_period_ms;
+    }qos_deadlineS;
+
+    typedef struct qos_lifespan_
+    {
+        uint32_t topic_duration_s;
+        uint32_t dw_duration_s;
+        uint32_t dr_duration_s;
+    }qos_lifespanS;
+
+    typedef struct qos_liveliness_
+    {
+        enum qos_liveliness_kind kind;
+        uint32_t lease_duration_s;
+        uint32_t announcement_period_s;
+
+    }qos_livelinessS;
 
     typedef struct qos_ipconfig_
     {
@@ -145,9 +179,14 @@ extern "C"
         qos_disable_positive_acksS *disable_positive_acks;
     } qos_reliable_writerS;
 
+
+
     /// @brief qos结构体，后续可以添加更多字段，以支持更多qos策略
     typedef struct c_qos_
     {
+        qos_deadlineS *deadline;
+        qos_lifespanS *lifespan;
+        qos_livelinessS *liveliness;
         qos_transferS *transfer;
         qos_data_sharingS *data_sharing;
         qos_reliableS *reliable;
