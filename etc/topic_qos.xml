@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qos>
+    <!-- dw/dr 截止时间 -->
+    <qos_deadline>
+        <dw_period_ms>0</dw_period_ms>
+        <dr_period_ms>0</dr_period_ms>
+    </qos_deadline>
+    <!-- dw/dr 生命周期 -->
+    <qos_lifespan>
+        <dw_duration_s>0</dw_duration_s>
+        <dr_duration_s>0</dr_duration_s>
+    </qos_lifespan>
+    <!-- dw/dr 活性-->
+    <qos_liveliness>
+        <dw>               
+            <kind></kind>
+            <lease_duration_s>0</lease_duration_s>
+            <announcement_period_s>0</announcement_period_s>
+        </dw>
+        <dr>               
+            <kind></kind>
+            <lease_duration_s>0</lease_duration_s>
+            <announcement_period_s>0</announcement_period_s>
+        </dr>
+    </qos_liveliness>
+    <!-- dw/dr 资源限制-->
+    <qos_resourcelimits>
+        <dw>
+            <max_samples>default</max_samples>
+            <max_instances>default</max_instances>
+            <max_samples_per_instance>default</max_samples_per_instance>
+            <allocated_samples>default</allocated_samples>
+            <extra_samples>default</extra_samples>
+        </dw>
+        <dr>
+            <max_samples>default</max_samples>
+            <max_instances>default</max_instances>
+            <max_samples_per_instance>default</max_samples_per_instance>
+            <allocated_samples>default</allocated_samples>
+            <extra_samples>default</extra_samples>
+        </dr>
+    </qos_resourcelimits>
+    <!-- 禁用正回应（QOS策略-->
+    <qos_disable_positive_acks>                 
+        <enable>false</enable>
+        <keep_duration_ms>5000</keep_duration_ms>
+    </qos_disable_positive_acks>
+    <!-- 可靠性 -->
+    <qos_reliable>
+        <dw>
+            <kind>reliable</kind>
+        </dw>
+        <dr>
+            <kind>besteffort</kind>
+        </dr>
+    </qos_reliable>
+    <!-- 写入器可靠性-->
+    <qos_reliable_writer>
+        <disbale_positive_acks>
+            <enable>default</enable>
+            <keep_duration_ms>default</keep_duration_ms>
+        </disbale_positive_acks>
+    </qos_reliable_writer>
+
+</qos>

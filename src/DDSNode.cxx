@@ -128,6 +128,29 @@ DDS_CODE DDSNode::init(const NODE_KIND &__kind, c_qos &qos_, string __name)
         pqos.transport().user_transports.push_back(descriptor);
     }
 
+    // 添加用户信息（有配置的话）
+    int userd_hasinited = 0;
+    for (int i = 0; i < QOS_USERDATA_LEN; i++)
+    {
+        if (qos_config.userdata_dp[i] != 0)
+        {
+            userd_hasinited = 1;
+            break;
+        }
+    }
+    if (userd_hasinited)
+    {
+        UserDataQosPolicy user_data;
+        std::vector<eprosima::fastrtps::rtps::octet> vec;
+        vec = user_data.data_vec();
+        for (int j = 0;j < strlen(qos_config.userdata_dp);j++)
+        {
+            vec.push_back(qos_config.userdata_dp[j]);
+        }
+        user_data.data_vec(vec);
+        pqos.user_data(user_data);
+    }
+
     m_participant = DomainParticipantFactory::get_instance()->create_participant(0, pqos);
 
     // 注册types
@@ -152,7 +175,7 @@ DDS_CODE DDSNode::init(const NODE_KIND &__kind, c_qos &qos_, string __name)
 
 /// @brief 添加新的topic
 /// @param __topicN topic名称
-DDS_CODE DDSNode::pushTopic(string __topicN, c_qos * qos_)
+DDS_CODE DDSNode::pushTopic(string __topicN, c_qos *qos_)
 {
     bool flag = false;
     for (int i = 0; i < m_topic_li.size(); i++)
@@ -174,7 +197,7 @@ DDS_CODE DDSNode::pushTopic(string __topicN, c_qos * qos_)
     }
     CSTopic *topic = new CSTopic();
 
-    uint16_t result = topic->init(this, __topicN,qos_);
+    uint16_t result = topic->init(this, __topicN, qos_);
     // topic->startListen();
     if (result != 0)
     {

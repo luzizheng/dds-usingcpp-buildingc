@@ -14,6 +14,10 @@ extern "C"
 #define QOS_DIR_LEN 30
 #define QOS_WHITELIST_IP_NUM 10
 #define QOS_DATASHARE_DOMAIN_NUM 10
+#define QOS_USERDATA_LEN 20
+
+
+#pragma mark - qos选项类型枚举
 
     enum qos_trans_protocol
     {
@@ -32,7 +36,7 @@ extern "C"
     };
 
     /*传输可靠性选项*/
-    enum qos_reliable_mode
+    enum qos_reliable_kind
     {
         /*!
          * 不可靠传输：
@@ -96,16 +100,15 @@ extern "C"
         manual_by_topic_liveliness
     };
 
+#pragma mark - qos 子结构体
     typedef struct qos_deadline_
     {
-        float topic_period_ms;
         float dw_period_ms;
         float dr_period_ms;
     }qos_deadlineS;
 
     typedef struct qos_lifespan_
     {
-        uint32_t topic_duration_s;
         uint32_t dw_duration_s;
         uint32_t dr_duration_s;
     }qos_lifespanS;
@@ -151,8 +154,8 @@ extern "C"
 
     typedef struct qos_reliable_
     {
-        enum qos_reliable_mode dw_mode;
-        enum qos_reliable_mode dr_mode;
+        enum qos_reliable_kind dw_kind;
+        enum qos_reliable_kind dr_kind;
 
     } qos_reliableS;
 
@@ -170,7 +173,7 @@ extern "C"
 
     typedef struct qos_flowControllers_
     {
-        /*控制吞吐量最大为多少kb/s,用在Topic,0表示无限制*/
+        /*! 控制吞吐量最大为多少kb/s,用在Topic,0表示无限制*/
         uint32_t max_kbperSecond;
     } qos_flowControllersS;
 
@@ -179,28 +182,134 @@ extern "C"
         qos_disable_positive_acksS *disable_positive_acks;
     } qos_reliable_writerS;
 
+    typedef struct qos_resourcelimits_
+    {
+        /*! 
+         * 控制 dw 或 dr 可以在与其关联的所有实例中管理的最大样本数。
+         * 换句话说,它表示中间件可以为 dr 或 dw 存储的最大样本。
+         * 值 0 表示无限资源
+         */
+        int32_t max_samples;
 
+        /*! 
+         * 控制 dw 或 dr 可以管理的最大样本数。
+         * 值 0 表示无限资源
+         */
+        int32_t max_instances;
 
+        /*! 
+         * 控制 dw 或 dr 可以管理的实例中的最大样本数
+         * 值 0 表示无限资源
+         */
+        int32_t max_samples_per_instance;
+
+        /*! 
+         * 说明初始化时将分配的样本数。
+         * 值 0 表示无限资源
+         */
+        int32_t allocated_samples;
+
+        /*! 
+         * 说明将在池中分配的额外样本数,因此池中的最大样本数将max_samples 加 extra_samples。
+         * 即使历史记录已满,这些额外的样本也会充当样本库。
+         */
+        int32_t extra_samples;
+    }qos_resourcelimitsS;
+
+#pragma mark - qos结构体
     /// @brief qos结构体，后续可以添加更多字段，以支持更多qos策略
     typedef struct c_qos_
     {
+        /*!
+         * 截止时间：
+         * 在发布端,截止日期定义了应用程序预计提供新样本的最长时间。
+         * 在订阅端,它定义了应接收
+         * 新样本的最长期限。
+         */
         qos_deadlineS *deadline;
+
+        /*!
+         * 生命周期:
+         * dw写入的每个数据样本都有一个关联的过期时间,
+         * 超过该过期时间,数据将从dw 和 dr 历史记录以及瞬态和持久性信息缓存中删除
+         */
         qos_lifespanS *lifespan;
-        qos_livelinessS *liveliness;
+
+        /*!
+         * 活性:
+         * 控制服务使用的机制,以确保网络上的特定实体仍处于活动状态。
+         * 有不同的设置可以区分"数据定期更新"的应用和"数据偶尔更改"的应用。
+         * 它还允许根据活动机制应检测的故障类型自定义应用程序
+         */
+        qos_livelinessS *liveliness_dw;
+        qos_livelinessS *liveliness_dr;
+
+        /*!
+         * 配置传输层协议和参数
+         */
         qos_transferS *transfer;
+
+        /*!
+         * 配置dw和dr之间的数据共享传递通信
+         */
         qos_data_sharingS *data_sharing;
+
+        /*!
+         * 可靠性
+         */
         qos_reliableS *reliable;
-        qos_historyS *history;
-        qos_durabilityS *durability;
-        qos_flowControllersS *flowControllers;
+
+        /*!
+         * 写入器可靠性
+         */
         qos_reliable_writerS *reliable_writer;
+
+        /*!
+         * 历史
+         */
+        qos_historyS *history;
+
+        /*!
+         * 持久性:
+         * dw 可以在整个 Topic 中发送消息,即使网络上没有 DataReader 也是如此。
+         * 此外,在写入某些数据后加入 Topic 的 dr 可能对访问该信息感兴趣。
+         * 持久性 定义了在 dr 加入之前,系统对 Topic 上存在的那些样本的行为方式。
+         * 系统的行为取决于 qos_durability_kind 的值
+         */
+        qos_durabilityS *durability;
+
+        /*!
+         * 配置参与者的流控制器
+         */
+        qos_flowControllersS *flowControllers;
+
+        /*!
+         * 用于DataWriter的资源限制策略
+         */
+        qos_resourcelimitsS *resourcelimits_dw;
+        /*!
+         * 用于DataReader的资源限制策略
+         */
+        qos_resourcelimitsS *resourcelimits_dr;
+
+        /*!
+         * 用于DomainParticipant的用户信息
+         */
+        char userdata_dp[QOS_USERDATA_LEN];
+        /*!
+         * 用于DataWriter的用户信息
+         */
+        char userdata_dw[QOS_USERDATA_LEN];
+        /*!
+         * 用于DataReader的用户信息
+         */
+        char userdata_dr[QOS_USERDATA_LEN];
     } c_qos;
 
     /// @brief 根据xml文件生成一个qos结构体
     /// #@param qos_ptr qos结构体指针
     /// @param xmlfile xml文件路径
-    // bool genqosconf(c_qos *qos_ptr, const char *xmlfile);
-    c_qos *genqosconf(const char *xmlfile);
+    int genqosconf(c_qos**qos_,const char *xmlfile);
 
     /// @brief 释放结构体
     bool freeQos(c_qos *qos_ptr);

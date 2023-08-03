@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qos>
+    <qos_transfer>
+        <trans_mode>udp</trans_mode>                <!--传输层协议选择:(shm、udp、tcp)-->
+        <socket_sendBufferSize>1024*1024</socket_sendBufferSize>
+        <socket_receiveBufferSize>1024*1024</socket_receiveBufferSize>
+        <tcp_config>                            <!--ip、端口、白名单设置-->
+            <tcp_wanip>127.0.0.1</tcp_wanip>
+            <tcp_port_locator>5101</tcp_port_locator>
+            <tcp_port_listen>5100</tcp_port_listen>
+            <tcp_whitelist_ips>127.0.0.1 172.17.0.1 10.13.235.171</tcp_whitelist_ips>
+        </tcp_config>
+    </qos_transfer>
+    <data_sharing>                        <!--是否使用零拷贝（仅在本地环境有效）-->
+        <kind>OFF</kind>                      <!-- 数据共享（零拷贝）的启用状态:0:OFF 1:ON 2:AUTO -->
+        <shared_dir>/home</shared_dir>
+        <max_domains>5</max_domains>
+        <domain_ids>
+            <domainId>0</domainId>
+            <domainId>1</domainId>
+        </domain_ids>
+    </data_sharing>
+    <qos_disable_positive_acks>                 <!-- 禁用正回应（QOS策略-->
+        <enable>false</enable>
+        <keep_duration_ms>5000</keep_duration_ms>
+    </qos_disable_positive_acks>
+</qos>

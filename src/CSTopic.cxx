@@ -58,11 +58,11 @@ DDS_CODE CSTopic::configDataWriterReaderQoS(DataWriterQos *wqos, DataReaderQos *
             wqos->data_sharing().off();
         }
 
-        if (qos_->reliable->dw_mode == besteffort)
+        if (qos_->reliable->dw_kind == besteffort)
         {
             wqos->reliability().kind = BEST_EFFORT_RELIABILITY_QOS;
         }
-        else if (qos_->reliable->dw_mode == reliable)
+        else if (qos_->reliable->dw_kind == reliable)
         {
             wqos->reliability().kind = RELIABLE_RELIABILITY_QOS;
         }
@@ -93,6 +93,36 @@ DDS_CODE CSTopic::configDataWriterReaderQoS(DataWriterQos *wqos, DataReaderQos *
 
         wqos->reliable_writer_qos().disable_positive_acks.enabled = qos_->reliable_writer->disable_positive_acks->enable;
         wqos->reliable_writer_qos().disable_positive_acks.duration = qos_->reliable_writer->disable_positive_acks->keep_duration_ms/0.001;
+        
+        // 流量限制(仅在dw上使用)
+        if (qos_->flowControllers->max_kbperSecond > 0)
+        {
+            wqos->publish_mode().kind = ASYNCHRONOUS_PUBLISH_MODE;
+            ThroughputControllerDescriptor slowPublisherThroughputController{qos_->flowControllers->max_kbperSecond*1000, 1000};
+            wqos->throughput_controller() = slowPublisherThroughputController;
+        }
+        
+        wqos->deadline().period.seconds = qos_->deadline->dw_period_ms/1000.0;
+        wqos->lifespan().duration.seconds = qos_->deadline->dw_period_ms/1000.0;
+
+        if (qos_->liveliness_dw->kind == automatic_liveliness)
+        {
+            wqos->liveliness().kind = AUTOMATIC_LIVELINESS_QOS;
+        }else if (qos_->liveliness_dw->kind == manual_by_participant_liveliness)
+        {
+            wqos->liveliness().kind = MANUAL_BY_PARTICIPANT_LIVELINESS_QOS;
+        }else if (qos_->liveliness_dw->kind == manual_by_topic_liveliness)
+        {
+            wqos->liveliness().kind = MANUAL_BY_TOPIC_LIVELINESS_QOS;
+        }
+        wqos->liveliness().lease_duration.seconds = qos_->liveliness_dw->lease_duration_s;
+        wqos->liveliness().announcement_period.seconds = qos_->liveliness_dw->announcement_period_s;
+
+        wqos->resource_limits().max_samples = qos_->resourcelimits_dw->max_samples;
+        wqos->resource_limits().max_instances = qos_->resourcelimits_dw->max_instances;
+        wqos->resource_limits().max_samples_per_instance = qos_->resourcelimits_dw->max_samples_per_instance;
+        wqos->resource_limits().allocated_samples = qos_->resourcelimits_dw->allocated_samples;
+        wqos->resource_limits().extra_samples = qos_->resourcelimits_dw->extra_samples;
 
     }
 
@@ -110,11 +140,11 @@ DDS_CODE CSTopic::configDataWriterReaderQoS(DataWriterQos *wqos, DataReaderQos *
             wqos->data_sharing().off();
         }
 
-        if (qos_->reliable->dr_mode == besteffort)
+        if (qos_->reliable->dr_kind == besteffort)
         {
             rqos->reliability().kind = BEST_EFFORT_RELIABILITY_QOS;
         }
-        else if (qos_->reliable->dr_mode == reliable)
+        else if (qos_->reliable->dr_kind == reliable)
         {
             rqos->reliability().kind = RELIABLE_RELIABILITY_QOS;
         }
@@ -142,7 +172,28 @@ DDS_CODE CSTopic::configDataWriterReaderQoS(DataWriterQos *wqos, DataReaderQos *
         {
             rqos->durability().kind = PERSISTENT_DURABILITY_QOS;
         }
-        
+
+        rqos->deadline().period.seconds = qos_->deadline->dr_period_ms/1000.0;
+        rqos->lifespan().duration.seconds = qos_->deadline->dr_period_ms/1000.0;
+
+        if (qos_->liveliness_dr->kind == automatic_liveliness)
+        {
+            rqos->liveliness().kind = AUTOMATIC_LIVELINESS_QOS;
+        }else if (qos_->liveliness_dr->kind == manual_by_participant_liveliness)
+        {
+            rqos->liveliness().kind = MANUAL_BY_PARTICIPANT_LIVELINESS_QOS;
+        }else if (qos_->liveliness_dr->kind == manual_by_topic_liveliness)
+        {
+            rqos->liveliness().kind = MANUAL_BY_TOPIC_LIVELINESS_QOS;
+        }
+        rqos->liveliness().lease_duration.seconds = qos_->liveliness_dr->lease_duration_s;
+        rqos->liveliness().announcement_period.seconds = qos_->liveliness_dr->announcement_period_s;
+
+        rqos->resource_limits().max_samples = qos_->resourcelimits_dr->max_samples;
+        rqos->resource_limits().max_instances = qos_->resourcelimits_dr->max_instances;
+        rqos->resource_limits().max_samples_per_instance = qos_->resourcelimits_dr->max_samples_per_instance;
+        rqos->resource_limits().allocated_samples = qos_->resourcelimits_dr->allocated_samples;
+        rqos->resource_limits().extra_samples = qos_->resourcelimits_dr->extra_samples;
     }
 
     return DDS_MSG_SUCCESS;
