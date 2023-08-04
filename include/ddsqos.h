@@ -156,6 +156,8 @@ extern "C"
     {
         enum qos_reliable_kind dw_kind;
         enum qos_reliable_kind dr_kind;
+        uint32_t max_blocking_time_dw_ms;
+        uint32_t max_blocking_time_dr_ms;
 
     } qos_reliableS;
 

@@ -20,8 +20,7 @@
             <domainId>1</domainId>
         </domain_ids>
     </data_sharing>
-    <qos_disable_positive_acks>                 <!-- 禁用正回应（QOS策略-->
-        <enable>false</enable>
-        <keep_duration_ms>5000</keep_duration_ms>
-    </qos_disable_positive_acks>
+    <qos_flowControllers>
+        <max_kbperSecond>default</max_kbperSecond>
+    </qos_flowControllers>
 </qos>

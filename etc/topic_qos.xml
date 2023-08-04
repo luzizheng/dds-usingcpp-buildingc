@@ -12,12 +12,14 @@
     </qos_lifespan>
     <!-- dw/dr 活性-->
     <qos_liveliness>
-        <dw>               
+        <dw>             
+            <!-- automatic/manual_by_participant/manual_by_topic -->  
             <kind></kind>
             <lease_duration_s>0</lease_duration_s>
             <announcement_period_s>0</announcement_period_s>
         </dw>
-        <dr>               
+        <dr>            
+            <!-- automatic/manual_by_participant/manual_by_topic -->     
             <kind></kind>
             <lease_duration_s>0</lease_duration_s>
             <announcement_period_s>0</announcement_period_s>
@@ -48,18 +50,38 @@
     <!-- 可靠性 -->
     <qos_reliable>
         <dw>
+            <!-- reliable/besteffort -->
             <kind>reliable</kind>
+            <max_blocking_time_ms></max_blocking_time_ms>
         </dw>
         <dr>
+            <!-- reliable/besteffort -->
             <kind>besteffort</kind>
+            <max_blocking_time_ms></max_blocking_time_ms>
         </dr>
     </qos_reliable>
     <!-- 写入器可靠性-->
     <qos_reliable_writer>
         <disbale_positive_acks>
+            <!-- true/false -->
             <enable>default</enable>
             <keep_duration_ms>default</keep_duration_ms>
         </disbale_positive_acks>
     </qos_reliable_writer>
-
+    <!-- 历史深度 -->
+    <qos_history>
+        <!-- keep_last/keep_all -->
+        <kind>keep_last</kind>
+        <depth>20</depth>
+    </qos_history>
+    <qos_durability>
+        <dw>
+            <!-- volatitle/transient_local/transient/persistent -->
+            <kind>default</kind>
+        </dw>
+        <dr>
+            <!-- volatitle/transient_local/transient/persistent -->
+            <kind>default</kind>
+        </dr>
+    </qos_durability>
 </qos>
